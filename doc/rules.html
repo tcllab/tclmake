@@ -1,0 +1,249 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:18  1998">
+  <title>Rules</title>
+                    <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Rules</h1>
+
+
+<b>tclmake</b> recognizes rules in a subset of <b>make</b> syntax. The
+types of rules recognized are:
+
+<ul>
+<li><a href="#simple">Simple rules</a>
+<li><a href="#phony">Phony targets</a>
+<li><a href="#pattern">Pattern rules</a>
+<li><a href="#suffix">Suffix rules</a>
+<li><a href="#double">Double-colon rules</a>
+<li><a href="#optionrules">Option rules</a>
+</ul>
+
+
+
+<a name="simple">
+  <h2>Simple rules</h2>
+  </a>
+  <p>
+
+
+
+Simple rules are rules that contain a colon
+but do not contain a percent sign.
+<pre>
+tclIndex: $(TCL_SRCS)
+</pre>
+
+<p>
+Targets are to the left; dependencies to the right.  There can be an
+arbitrary number of either.  Wild-cards, such as <b>*.tcl</b> can be
+used on either side of the colon.
+
+<p>If a target does not exist, or if any of the dependencies are newer
+than any of the targets, then that target is out of date, and the
+command will be executed to update it. If any dependency is itself a
+target (in another rule), then the dependencies will be chained to
+determine if the dependency itself needs updating,
+
+
+  <a name="phony">
+  <h2>Phony targets</h2>
+  </a>
+  <p>
+
+
+If a target is not the name of a file, then it is
+what is called a "phony target". This allows rules
+to act almost as procedure calls. For example, a
+first rule in a tclmakefile may be:
+
+<pre>
+all: tclIndex sources
+</pre>
+
+When <b>tclmake</b> attempts to update the goal <b>all</b>, it looks
+for a file named <b>all</b>. If it doesn't find one, it recursively
+attempts to update the dependencies <b>tclIndex</b> and
+<b>sources</b>. The effect is exactly the same as if <b>tclIndex</b>
+and <b>sources</b> had been the goals in the first place.
+
+<p>(Unlike regular <b>make</b>, <b>tclmake</b> does not have any means
+of specifying which targets are phony.  The way that phony targets
+works is somewhat different, but I am not sure yet whether this will
+cause problems.)
+
+  <a name="pattern">
+  <h2>Pattern rules</h2>
+  </a>
+  <p>
+
+
+A pattern rule uses the character <b>%</b> as a place-holder to
+match patterns. The general form of this rule is:
+
+<pre>
+<i>targets</i> <b>:</b> <i>target-pattern</i>  <b>:</b> <i>dep-pattern</i> 
+</pre>
+
+For example, we might have the rule:
+<pre>
+$(JAVA_CLASSES): %.class : %.java
+</pre>
+
+Suppose the <b>hype.class</b> file becomes a goal, then
+<b>tclmake</b> will match the pattern <b>%.class</b> against
+it, and use <b>hype.java</b> as its dependency.
+
+<p>
+More often than not, the initial target list will
+be omitted, as in:
+
+<pre>
+%.class : %.java
+</pre>
+
+In this case, <b>tclmake</b> will try matching the pattern
+<b>%.class</b> against any target that becomes a goal. This is less
+efficient, but often more convenient.
+
+<p><b>tclmake</b> recognises a special case: the <i>target</i> is
+supplied, but it matches no target-patterns, or none of the
+dependencies from matching actually exist. In this case,
+<b>tclmake</b> does a "reverse" pattern match: it matches the
+<i>dependency</i> pattern against existing files, and if any files are
+found, updates the corresponding targets.
+
+<p>For example, the default tclmakefile contains the rule
+
+<pre>
+sources: % :: SCCS/s.%
+        exec sccs get $<
+</pre>
+
+The  pattern-match will find  <b>sources</b> as  a target,  and
+<b>SCCS/s.sources</b> as a dependency. Since, however, the latter file
+does  not exist, <b>tclmake</b> pattern-matches  against  all files in
+the  SCCS  directory, with the result that all files with a
+new SCCS file will be updated.
+
+
+  <a name="suffix">
+  <h2>Suffix rules</h2>
+  </a>
+  <p>
+
+
+A suffix rule consists of two concatenated file suffixes.
+For example:
+<pre>
+.java.class:
+</pre>
+
+A suffix rule is an older form of rule. This rule
+is equivalent to the rule 
+<pre>
+%.class : %.java
+</pre>
+
+
+  <a name="double">
+  <h2>Double-colon rules</h2>
+  </a>
+  <p>
+
+
+Any rule can have a double-colon instead of a single
+colon, as in the example
+
+<pre>
+%.tcl :: SCCS/s.%.tcl
+</pre>
+
+The double-colon means that this rule is a <i>terminator</i>
+rule. <b>tclmake</b> will not chain dependencies
+in implicit rules. In this example, this means that,
+if tclmake finds, say, a file <b>foo.tcl</b>, but no
+file named <b>SCCS/s.foo.tcl</b>, it will not
+attempt to update a target named <b>SCCS/s.foo.tcl</b>,
+which can never be a target.
+
+<p>In other words, use the double-colon when a dependency
+is a file that <b>must</b> exist, and cannot be produced
+from other files.
+
+
+
+  <a name="optionrules">
+  <h2>Option rules</h2>
+  </a>
+  <p>
+
+
+One of the few extensions <B>tclmake</B> makes to regular <B>make</B>
+is the ability to define command-line options in the tclmakefile
+itself.  To do so, simply define a rule that has targets beginning
+with a leading dash, and with no dependencies. If any of those targets
+are specified on the command line, the rule will be run after updating
+all other targets.
+
+ <P>So far, the only real use I have come up with for this facility is
+for recursive makes. The <B>--recursive</B> and <B>--packages</B>
+command-line options are defined in this way. See <A
+HREF="recursion.html">Recursive tclmakes</A> for examples.
+
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="variables.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: Variables"></a>
+<a href="commands.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: Commands"></a>
+
+<br>
+</div class="navigation">
+
+  <div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

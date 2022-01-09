@@ -1,0 +1,104 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:18  1998">
+  <title>Reading the makefile</title>
+                         <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Reading the makefile</h1>
+
+When started, <b>tclmake</b> by default looks for a "tclmakefile"
+named <b>makefile.tmk</b> or <b>Makefile.tmk</b>. The tclmakefile can
+be specified on the command line by the <b>-f</b> or <b>--file</b>
+option.
+
+<p>If there is no such file, <b>tclmake</b> attempts several
+things. First, it looks for a file named <b>makefile</b> or
+<b>Makefile</b>. If it finds one, then it reads it (and any files it
+includes), looking for a variable named TCLMAKEFILE. If it finds one,
+it uses its value as the name of the tclmakefile, and gives that
+file an implicit <b>use</b> of the <b>makefile</b> in the current
+directory (see below).
+
+<p>If neither of the above finds a file, <b>tclmake</b> looks for the
+environment variable MAKELIB. If it exists, then it looks for the file
+<b>default.tmk</b> in the directory given by that variable;
+otherwise, it looks for the file
+<b>$(TCLMAKE_LIBRARY)/mk/default.tmk</b> (which must exist).  This
+last file contains a number of useful rules for processing directories
+containing Tcl files, and enables operations like cleaning directories
+and generating <b>tclIndex</b> files without needing to bother with
+writing a makefile or tclmakefile.
+
+<p>Once <b>tclmake</b> has a file, it reads it, looking for variable
+definitions and rules. It also recognizes the following special
+directives, if they are the first word on a line (that is not part of
+a command):
+
+<dl>
+<dt><b>include</b> <i>filename</i>
+
+<dd>Substitute the named file into the input stream.
+
+<dt><b>use</b> <i>filename</i>
+
+<dd>This is like <b>include</b>, except that only variable definitions
+are extracted from the file. This is useful for having <b>tclmake</b>
+use information such as the list of files in the directory from a
+regular makefile, and saves having to maintain two copies.
+
+<dt><b>source</b> <i>filename</i>
+
+<dd>Source the named file ino the Tcl interpreter. The file
+must be a Tcl file. This allows  arbitrarily complex commands
+to be executed.
+
+<dt><b>proc</b> <i>args</i> <i>body</i>
+
+<dd>Define a Tcl procedure. This must be a legal Tcl procedure
+definition. Arbitrary Tcl procedures can be embedded in the
+tclmakefile.
+
+</ol>
+
+Note that <b>tclmake</b> does not recognize arbitrary Tcl commands in
+the tclmakefile. For example, you cannot use commands like:
+
+<pre>
+set onething anotherthing
+</pre>
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="running.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: Invoking tclmake"></a>
+<a href="variables.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: Variables"></a>
+
+<br>
+</div class="navigation">
+<br>
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>

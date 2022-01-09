@@ -1,0 +1,119 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:19  1998">
+  <title>Recursive tclmakes</title>
+          <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Recursive tclmakes</h1>
+
+
+<b>tclmake</b> supports recusion in the same way that <b>make</b>
+does. In addition, its option-rules can be used to avoid having
+to write recursion explicitly for every target.
+
+ <P>Here is a command that performs a recursive clean.
+It assumes that there is a make-variable named DIRS:
+
+<pre>
+clean:
+        @if { [glob -nocomplain *~ core #*# ,*] == "" } {
+	    break
+	}
+	eval file delete [glob -nocomplain *~ core #*# ,*]
+        @foreach dir {$(DIRS)} {
+	   if { [file isdirectory $dir] && [file executable $dir] } {
+		cd $dir
+		$(MAKE) $(MFLAGS) $(MAKEVARS) clean
+		cd $(MAKEDIR)
+	    }
+	}
+</pre>
+
+For each sub-directory in the DIRS make-variable, <B>tclmake</B> will
+call itself recursively. (Each recursive call creates a new Tcl
+interpreter, to ensure that there are no problems with sub-tclmakes
+corrupting global state.)
+
+ <P>Although this works, it means that every rule that is to be
+recursively processed needs to be written this way. <b>tclmake</b> has
+a better solution: use an option-rule (see <a
+href="rules.html#optionrules">Option rules</a>). For recursion, the
+option-rule needed is this:
+
+<pre>
+-r --recursive:
+        @foreach dir {$(DIRS)} {
+	    if { [file isdirectory $dir] && [file executable $dir] } {
+		cd $dir
+		$(MAKE) $(MFLAGS) $(MAKEVARS) $!
+		cd $(MAKEDIR)
+	    }
+	}
+</pre>
+
+Now, the recursion can be invoked in one of two ways.
+First, it can simply be specified on the command line, as
+in:
+<pre>
+    tclmake --recursive clean
+</pre>
+
+Second, it can be added to any rule as a dependency. Thus,
+the recursive <B>clean</B> rule above is written as
+<pre>
+clean: --recursive
+        @if { [glob -nocomplain *~ core #*# ,*] == "" } {
+	    break
+	}
+	eval file delete [glob -nocomplain *~ core #*# ,*]
+</pre>
+
+In this case, <B>make clean</B> will recursively clean directories.
+(Personally, I don't write my rules like this, because I prefer to
+have the recursion only when I ask for it.)
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="commands.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: Commands"></a>
+<a href="example.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: A complete example"></a>
+
+<br>
+</div class="navigation">
+<br>
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+

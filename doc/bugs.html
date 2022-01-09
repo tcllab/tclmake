@@ -1,0 +1,102 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:19  1998">
+  <title>Bugs and limitations</title>
+                       <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Bugs and limitations</h1>
+
+<p>Known bugs:
+<ul>
+<li>The line immediately following a command is ignored.
+The best work-around is simply to leave a blank
+line after each command.
+
+<li>The line immediately following a rule with no
+command is ignored. This <i>has</i> to be fixed.
+
+<li>Option-dependencies will not be processed
+in terminal rules. For example, the rule
+
+<pre>
+sources: % :: SCCS/s.% --recursive
+	exec sccs get $@
+</pre>
+
+will <I>not</I> be recursive, since the fact that it is
+a terminal rule prevents <B>--recursive</B> from being
+updated.
+
+ <P>(Specifying the option on the command line still works.)
+
+</ul>
+
+<b>tclmake</b> is not supposed to be a replacement for
+<b>make</b>. With that in mind, here are some features of other
+<b>make</b> implementations that <b>tclmake</b> does not support.
+
+<ul>
+<li>Non-recursive variables.
+<li>Appending to variables.
+<li>Filtering functions.
+<li>The VMAKE variable.
+</ul>
+
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="example.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: A complete example"></a>
+
+<br>
+</div class="navigation">
+<br>
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,123 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:18  1998">
+  <title>Notmake -- a Tcl-only make-like utility</title>
+                       <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+
+<body bgcolor="#faf0e6">
+<h1>tclmake -- a Tcl-only make-like utility</h1>
+
+<p>This release: <b>0.2 devel -- unreleased</b>
+
+<p> <b>tclmake</b> is a simple make-like utility written entirely in
+Tcl. It reads files written in a subset of regular <B>make</B>, but
+with the commands for each rule written in Tcl.
+
+ <P>For example, a rule and command might look like:
+
+<pre>
+  tclIndex: main.tcl parse.tcl update.tcl
+        auto_mkindex [pwd] main.tcl parse.tcl update.tcl
+</pre>
+
+<B>tclmake</B> has some interesting features:
+
+<ul>
+
+<li> Since the commands are written in Tcl, file processing
+using Tcl commands (such as the above example)
+are simpler to write.
+
+<li> Programs written in Tcl that need to do stuff based on
+file dependencies can call <B>tclmake</B> directly, instead
+of having to write makefiles.
+
+</ul>
+
+ <P> <B>tclmake</B> has some simple enhancements to provide useful
+default actions even if there is no makefile, and to make recursion in
+subdirectories simpler.
+
+
+<p><b>Contents</b>
+
+<div class="contents">
+<ul>
+<li><a href="install.html">Getting and installing tclmake</a>
+<li><a href="introduction.html">Introduction</a>
+<li><a href="running.html">Invoking tclmake</a>
+<li><a href="parsing.html">Reading the makefile</a>
+<li><a href="variables.html">Variables</a>
+<li><a href="rules.html">Rules</a>
+<li><a href="commands.html">Commands</a>
+<li><a href="recursion.html">Recursive tclmakes</a>
+<li><a href="example.html">A complete example</a>
+<li><a href="bugs.html">Bugs and limitations</a>
+</ul>
+</div class="contents">
+
+
+<B>WARNING</b>
+
+<blockquote>
+
+<b>tclmake</b> is alpha-release software.  It has
+the potential to do a lot of damage to your files, so please try
+<b>tclmake</b> in a test directory first.
+
+</blockquote>
+</center>
+
+
+<p> 
+Copyright &#169 1998, The Regents of the University of California.
+All rights reserved.  Last updated: 05/11/98.
+Author:
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr">John Reekie</a>.
+
+
+</div>
+
+
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

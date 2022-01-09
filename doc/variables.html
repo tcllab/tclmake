@@ -1,0 +1,140 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:18  1998">
+  <title>Variables</title>
+                       <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Variables</h1>
+
+Variables can be used to simplify makefiles.
+A variable definition looks like this:
+<pre>
+FOO = bar baz
+</pre>
+
+Backslashes can be used to continue lines:
+<pre>
+FOO = \
+     bar \
+     baz
+</pre>
+
+A variable substitution looks like this:
+<pre>
+  $(FOO)
+</pre>
+
+A typical use of variables would be something like:
+<pre>
+TCL_FILES = main.tcl update.tcl parse.tcl
+tclIndex: $(TCL_FILES)
+        auto_mkindex [pwd] $^
+</pre>
+
+When <b>tclmake</b> processes a rule or a command, it substitutes
+variable definitions wherever possible. In this example, the effect is
+exactly the same as for the rule in the <a
+href="introduction.html">Introduction</a>.  The variable <b>$^</b>
+stands for all the dependencies of the rule -- see <a
+href="commands.html">Commands</a>.
+
+<p>
+Variables are defined recursively, as in <b>make</b>.  For example, in
+the following,
+
+<pre>
+FOO = $(BAR) foo!
+BAR = oh
+</pre>
+
+the value of FOO will be "oh foo!".
+
+<p>Environment variables can be referenced in the same way. A variable
+defined in a makefile or on the command line will override the value
+given by the environment.  <b>tclmake</b> can also read variable
+definitions from regular makefiles, with a command such as
+
+<pre>
+use makefile
+</pre>
+
+<p><b>tclmake</b> defines some variables automatically:
+
+<dl>
+<dt><b>MAKE</b>
+<dd>The command used to invoke it. This is always set to "tclmake,"
+so that it can be used to run a sub-make.
+
+<dt><b>MAKEDIR</b>
+<dd>The directoryon which <b>tclmake</b> is running.
+
+<dt><b>MAKEFLAG</b>
+<dd>The flags passed to <b>tclmake</b> on the command line.
+
+<dt><b>MAKEVARS</b>
+<dd>The variables passed to <b>tclmake</b> on the command line.
+
+</dl>
+
+<p><b>tclmake</b> does not support non-recursively-defined variables,
+as in the <b>:=</b> definitions of GNU <b>make</b>.
+
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="parsing.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: Reading the makefile"></a>
+<a href="rules.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: Rules"></a>
+
+<br>
+</div class="navigation">
+
+  <div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

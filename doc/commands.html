@@ -1,0 +1,125 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:19  1998">
+  <title>Commands</title>
+                       <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Commands</h1>
+
+The command for any rule is just a piece of Tcl code.  The command
+must be on the line immediately after a command, and must be indented
+by at least one space or tab. The command ends at the first blank line
+or line that has a character at the start of the line.
+
+ <P> If a line starts with the character "<B>@</B>," then the command
+starting on that line will not be echoed to the console. (Note that
+<B>@</B> can be used only at the top-level of a command.)
+
+<p>The command will have any make-variables substituted into
+it. (There is no reason you cannot have the code also set and read
+regular Tcl variables, but you should be careful with this, as the
+order in which commands are executed is difficult to predict.)  The
+command will also have the following special variables substituted:
+
+<dl>
+<dt><b>$@</b>
+
+<dd> The name of the target that is being updated. In the
+<b>tclIndex</b> example, this variable will be "tclIndex."
+
+<dt><b>$!</b>
+
+<dd> The name of the target that is being updated that caused
+this target to be updated. This is like going "up the call
+stack," and is used only in very special circumstances
+(see <a href="recursion.html">Recursive tclmakes</a>).
+This variable is unique to <b>tclmake</b>.
+
+<dt><b>$&lt;</b>
+
+<dd> The name of the first dependency. In the
+<b>tclIndex</b> example, this variable will be the
+first file in TCL_SRCS.
+
+<dt><b>$?</b>
+
+<dd> The names of the dependencies that are newer than
+the target. In the
+<b>tclIndex</b> example, this variable will be the
+files in TCL_SRCS that are newer than <b>tclIndex</b>.
+(What about phony dependencies?)
+
+<dt><b>$^</b>
+<br><b>$+</b>
+
+<dd> The names of all dependencies. In the 
+<b>tclIndex</b> example, this variable will be the
+value of TCL_SRCS.
+
+<dt><b>$*</b>
+
+<dd> The stem of a pattern-match rule -- that is, the
+part of the file name that matched the "<b>%</b>" symbol.
+
+</dl>
+
+
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="rules.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: Rules"></a>
+<a href="recursion.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: Recursive tclmakes"></a>
+
+<br>
+</div class="navigation">
+<br>
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

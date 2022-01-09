@@ -1,0 +1,34 @@
+<!-- @(#)style.css	1.3 02/10/98 -->
+H1 {
+	text-align : center;
+	margin-bottom : 1em;
+}
+
+H2 {
+	font-size: medium;
+	font-style: italic;
+	margin-top: 1em;
+}
+
+DT {
+	margin-bottom: 12;
+}
+
+BODY {
+	background: white;
+}
+
+DIV.body {
+	margin-top : 1em;
+	margin-left : 4em;
+	margin-right : 4em;
+}
+
+DIV.navigation {
+	text-align: center;
+}
+
+DIV.footer {
+	text-align: center;
+}
+

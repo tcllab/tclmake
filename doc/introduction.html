@@ -1,0 +1,134 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:18  1998">
+  <title>Introduction</title>
+                         <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Introduction</h1>
+
+
+<b>tclmake</b> works on exactly the same principles
+as <b>make</b>. 
+A <i>makefile</i> contains <i>rules</i>, which specify
+which files are used to produced which other files, and <i>commands</i>,
+which are executed to update files. Here is a sample
+rule and command:
+
+<pre>
+tclIndex: main.tcl parse.tcl update.tcl
+        auto_mkindex [pwd] main.tcl parse.tcl update.tcl
+</pre>
+
+The files on the left-hand side of a rule are called
+<i>targets</i>, and those on the right are called
+<i>dependencies</i>. In this case, the target is
+<b>tclIndex</b>, and the dependencies are the three
+Tcl files.
+
+<p>The job of <b>tclmake</b> is to see if any of the
+targets are out of date, and if they are, to update them.
+For example, if <b>tclmake</b> is invoked with
+<pre>
+    tclmake tclIndex
+</pre>
+
+then <b>tclmake</b> looks at the modification dates of <b>tclIndex</b>
+and the three Tcl files. If any of the Tcl files is more recent than
+<b>tclIndex</b>, or if <b>tclIndex</b> does not exist, then
+<b>tclmake</b> executes the command, which updates <b>tclIndex</b>.
+
+<p>The targets given on the command line when <b>tclmake</b> is
+invoked are called the <i>goals</i>, since these are the targets that
+<b>tclmake</i> will try to update. If no goals are given on the
+command line, then <b>tclmake</b> will use the targets of the first
+rule in the makefile as its goals.
+
+<p>Dependencies are typically <i>chained</i>. For example,
+suppose that each Tcl file also depends on some other
+file, such as a source-code control file. In that case,
+we might have a rule like this:
+
+<pre>
+%.tcl :: SCCS/s.%.tcl
+        exec sccs get $<
+</pre>
+
+This rule says that any file with the <b>.tcl</b> suffix depends on a
+file in the SCCS directory. (The double-colon is explained in <a
+href="rules.html#double">Double-colon rules</a>.) Suppose we try to make
+<b>tclIndex</b>. <b>tclmake</b> sees that this file depends on
+<b>main.tcl</b>. However, instead of just checking the date of
+<b>main.tcl</b>, it also sees that <b>main.tcl</b> depends on
+<b>SCCS/s.main.tcl</b>, so <b>tclmake</b> then checks whether
+<b>SCCS/s.main.tcl</b> is newer than <b>main.tcl</b>.  If it is, it
+executes the <b>sccs</b> command, and then executes the command that
+updates <b>tclIndex</b>. (If not, then it goes back and compares the
+file dates of <b>tclIndex</b> and <b>main.tcl</b>, as before.)
+
+<p>A makefile (or, as I call them in the rest of this document to
+distinguish between makefiles for regular <b>make</b> and makefiles
+for <b>tclmake</b>, a "tclmakefile") thus captures arbitrarily complex
+dependencies between files; <b>tclmake</b> provides the resolution
+mechanism that ensures that files are updated or regenerated in the
+correct order.
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="install.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: Getting and installing tclmake"></a>
+<a href="running.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: Invoking tclmake"></a>
+
+<br>
+</div class="navigation">
+<br>
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,64 @@
+# @(#)outline.tim	1.3 02/10/98
+#
+# Outline model for the tclmake documentation. This file
+# is read by Tycho to update the HTML doc structure.
+
+configure -inline 0
+configure -imagedir "img"
+configure -images {BTN_Top.gif BTN_Prev.gif BTN_Section.gif BTN_Next.gif}
+configure -bgcolor #ffffff
+configure -title {Tclmake -- a Tcl-only make-like utility}
+
+# The document template places the navigation links at the
+# bottom of the page
+configure -template {
+<html>
+<head>
+<title></title>
+</head>
+<div class="body">
+<body>
+
+<h1></h1>
+
+
+<div class="navigation">
+</div class="navigation">
+<br>
+<div class="footer">
+</div class="footer">
+</body>
+</div>
+</html>
+}
+
+# The header contains the link to the style sheet for this document
+configure -header {
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+}
+
+# The footer contains a link to the Tycho pages
+configure -footer {
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+}
+
+section install -inline 0 -title "Getting and installing tclmake"
+section introduction -inline 0 -title "Introduction"
+section running -inline 0 -title "Invoking tclmake"
+section parsing -title "Reading the makefile"
+section variables -inline 0 -title "Variables"
+section rules -inline 0 -title "Rules"
+section commands -title "Commands"
+section recursion -title "Recursive tclmakes"
+section example -title "A complete example"
+section bugs -title "Bugs and limitations"

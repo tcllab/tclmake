@@ -1,0 +1,138 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:18  1998">
+  <title>Getting and installing tclmake</title>
+                         <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Getting and installing tclmake</h1>
+
+
+The current distribution is not packaged terribly well, and requires
+things to be done by hand.  First, decide where to download the
+distribution:
+
+<ul>
+
+<li>Into your Tcl library directory. To see where this
+is, start <b>itclsh</b> or <b>tclsh</b> and execute
+
+<pre>
+  file dirname [info library]
+</pre>
+
+<li>Any location. After downloading into, say
+<B>/users/johnr/stuff</B>, set the environment variable
+<b>TCLMAKE_LIBRARY</b> to <B>/users/johnr/stuff/tclmake</B>.
+
+</ul>
+
+Download one of these files:
+
+<dl>
+<dt><a href="dist/tclmake.tar.gz">tclmake.tar.gz</a>
+
+<dd>To unpack (on Unix), do:
+<pre>
+    gzcat tclmake.tar.gz | tar -xf -
+</pre>
+
+<dt><a href="dist/tclmake.zip">tclmake.zip</a>
+
+<dd>To unpack (Windows or Unix), do:
+
+<pre>
+    unzip -a tclmake
+</pre>
+
+</dl>
+
+Make sure the file <b>tclmake/bin/tclmake</b> is in your path, by
+creating a symbolic link to it or by copying the file into a directory
+in the path.
+
+ <P>The default <B>tclmake</B> script starts up <B>itclsh</B>.
+Although <B>tclmake</B> does not require Itcl to run, I did this in
+order to ensure that index files are made properly when processing
+Itcl files. If you do not have <B>itclsh</B>, then change the third
+line of the script to <B>tclsh</B> or <B>tclsh80</B> (Windows)
+instead.
+
+<p>If you are running under Windows NT, you can:
+<ol>
+
+<li>Install the <b>cygwin32</b> user tools, and use <b>bash</b> as
+your shell. In that case, the script <b>tclmake</b> will run. (This
+somewhat contradicts what I said in the intro page about not having to
+install more tools -- however, the user tools includes <b>bash</b> and
+stuff like that, without gcc and the other <i>development</i> tools,
+and is well worth having!)
+
+<li>Use MS-DOS as your shell. In that case, copy the botch file
+<b>bin/tclmake.bat</b> into a directory in your path and modify it so
+that it points to the <B>tclmake</B> script.
+
+</ul>
+
+In either case, <B>tclsh</B> or <B>tclsh80</B> must also be in your
+path for it to work.
+
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="introduction.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: Introduction"></a>
+
+<br>
+</div class="navigation">
+<br>
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

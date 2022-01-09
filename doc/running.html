@@ -1,0 +1,155 @@
+<!-- $Id$ -->
+<html>
+<head>
+<meta name="generator" content="Tycho, ::tycho::htmlOutline,  Mon Feb 09 21:20:18  1998">
+  <title>Invoking tclmake</title>
+                         <!--header-->
+  
+  <LINK href="style.css" rel="stylesheet" type="text/css">
+
+  <!--/header-->
+</head>
+<div class="body">
+<body bgcolor="#faf0e6">
+
+<h1>Invoking tclmake</h1>
+
+
+
+From a command shell, change to the directory in which
+you want <b>tclmake</b> to run, and type
+
+<pre>
+  tclmake
+</pre>
+
+<b>tclmake</b> will run in that directory and attempt to make the
+targets of the first rule in the file. The full calling syntax of
+<n>tclmake</b> is:
+
+<blockquote>
+<b>tclmake</b> <i>options</i> <i>variables</i> ?<i>goal ...</i>?
+</blockquote>
+
+Each goal is the name of a target that <b>tclmake</b> will attempt to
+update. If none is supplied, <b>tclmake</b> will use the first target
+in the tclmakefile.  The <i>variables</i> are variable overrides,
+which have the syntax
+
+<blockquote>
+<i>varname</i><b>=</b><i>varvalue</i>
+</blockquote>
+
+The given variable will have its value set to the given value, and the
+value in the tclmakefile will be ignored.  The <i>options</i> are
+keywords beginning with a dash. <b>tclmake</b> accepts the following
+options:
+
+<dl>
+<dt>
+<b>-d
+<br>--debug</b>
+
+<dd>
+Print debugging information.
+
+<dt>
+<b>-f</b> <i>filename</i>
+<br><b>--file</b> <i>filename</i>
+
+<dd>
+Use this file as the tclmakefile.
+
+
+<dt>
+<b>-h
+<br>--help</b>
+
+<dd>
+Print out this list of options.
+
+<dt>
+<b>-s
+<br>--silent
+<br>--quiet</b>
+
+<dd>Print no information at all to <b>stdout</b> or <b>stderr</b>.
+
+</dl>
+
+If no makefile is specified, then <B>tclmake</B> will also
+recognize the following options. (These options are
+specified in the default tclmakefile.):
+
+<dl>
+
+<dt>
+<b>-p
+<br>--packages</b>
+
+<dd> Recursively call <b>tclmake</b> in directories that contain a
+<b>pkgIndex.tcl</b> file, except those that have names
+in uppercase (such as SCCS and RCS).
+
+<dt>
+<b>-r
+<br>--recursive</b>
+
+<dd>Recursively call <b>tclmake</b> in all
+sub-directories, except those that have names in
+uppercase (such as SCCS and RCS).
+
+</dl>
+
+<div class="navigation">
+<br>
+<a href="index.html">  <img  border=0  src="img/BTN_Top.gif"  alt="Top: Notmake -- a Tcl-only make-like utility"></a>
+<a href="introduction.html">  <img  border=0  src="img/BTN_Prev.gif"  alt="Previous: Introduction"></a>
+<a href="parsing.html">  <img  border=0  src="img/BTN_Next.gif"  alt="Next: Reading the makefile"></a>
+
+<br>
+</div class="navigation">
+<br>
+<div class="footer">
+  
+<br>
+<!-- 
+<p><a href="http://www.silverpoint.com/leo/lia/">
+<img border=0 src="img/butterfly1.gif" alt="Where this icon came from">
+</a>
+-->
+<p>
+<a href="http://ptolemy.eecs.berkeley.edu/tycho">The Tycho Project</a><br>
+<a href="http://ptolemy.eecs.berkeley.edu/~johnr/code/tclmake">The tclmake
+home page</a><br>
+<a href="mailto:johnr@eecs.berkeley.edu"><author>Comments?</author></a>
+
+  </div class="footer">
+</body>
+</div>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
