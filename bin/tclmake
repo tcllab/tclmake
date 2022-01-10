@@ -1,6 +1,4 @@
-#! /bin/sh
-# Command-line program for the tclmake utility \
-    exec tclsh8.0 "$0" "$@"
+#!/usr/bin/env tclsh
 
 # $Id: tclmake,v 1.1 1998/07/14 19:50:06 johnr Exp $
 # Author: John Reekie
@@ -19,6 +17,8 @@ if [info exists env(TCL_PACKAGES)] {
     }
 }
 
+lappend auto_path [file dir [file dir [file dir [file dir [file norm [file join [info script] __dummy__]]]]]]
+
 # Require the tclmake package.
 if [catch {package require tclmake}] {
     puts "Cannot find the tclmake package. You can\n\
@@ -31,7 +31,7 @@ if [catch {package require tclmake}] {
 }
 
 # Print startup sig
-puts "Tclmake, version 1.0..."
+puts "Tclmake, version 2.0..."
 
 # Run the main procedure
 eval tclmake $argv

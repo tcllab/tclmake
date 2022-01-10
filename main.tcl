@@ -5,6 +5,7 @@
 # @Version: @(#)main.tcl	1.6 05/14/98
 #
 # @Copyright (c) 1997-1998 The Regents of the University of California.
+# Changes Copyright (c) 2022 Stephen E. Huntley
 # All rights reserved.
 #
 # Permission is hereby granted, without written agreement and without
@@ -32,6 +33,7 @@
 
 
 #######################################################################
+package require Tcl 8.5
 #### variables
 #
 # Set these here so I have a reason to write a comment...
@@ -44,6 +46,8 @@ array set _flags {
     packages 0
     recursive 0
     silent 0
+    terminal 0
+    update 0
 }
 
 # The goals: targets that need to be updated
@@ -56,7 +60,7 @@ set _optiongoals {}
 array set _target {}
 
 # The dependencies (right-hand-side) of rules
-array set _dependency {}
+array set _depend {}
 
 # The corresponding commands
 array set _command {}
@@ -68,7 +72,8 @@ array set _vars {}
 set _unique 0
 
 # The array of up-to-date targets
-array set _uptodate {}
+#array set _uptodate {}
+array set _updated {}
 
 # A flag that says if a rule is terminal
 array set _terminal {}
@@ -100,6 +105,10 @@ proc tclmake {args} {
     # Execute the main procedure.
     set script {
 	lappend auto_path $env(TCLMAKE_LIBRARY)
+	if {[info exists env(TCLLIBPATH)]} {
+		lappend auto_path [lindex [array get env TCLLIBPATH] 1]
+	}
+
 	package require tclmake
 
 	# Set variables and call the _tclmake procedure
@@ -107,10 +116,15 @@ proc tclmake {args} {
 	set _vars(MAKEDIR) [pwd]
 	set _vars(MAKEVARS) ""
 	set _vars(MFLAGS) ""
-	eval _tclmake $args
+	eval _tclmake [lrange [list $args] 0 end]
     }
     set script [subst -nocommands $script]
-    $interp eval $script
+    
+    try {
+        $interp eval $script
+    } finally {
+        interp delete $interp
+    }
 }
 
 #######################################################################
@@ -121,8 +135,9 @@ proc tclmake {args} {
 # 
 proc _tclmake {args} {
     global _flags _goals _optiongoals _vars _makedata
-    global _target _depend _unrecognized
+    global _target _depend _unrecognized _updated
     global env
+    global makefile_interp
 
     # Print the current directory
     puts [pwd]
@@ -131,6 +146,12 @@ proc _tclmake {args} {
     if [eval _processCommandLine $args] {
 	return 1
     }
+
+    # Create sub-interpreter in which to execute all makefile commands
+    set makefile_interp [interp create]
+    $makefile_interp alias auto_mkindex auto_mkindex
+    $makefile_interp alias MAKE_UPDATE MAKE_UPDATE
+    $makefile_interp alias tclmake tclmake
 
     # Find the makefile
     set file ""
@@ -174,9 +195,15 @@ proc _tclmake {args} {
     if { $file == "" } {
 	set file [file join $env(TCLMAKE_LIBRARY) mk default.tmk]
     }
+    
+    set file [file dir [file norm [file join $file __dummy__]]]
+    
     if $_flags(debug) {
 	puts "Reading file \"$file\""
     }
+    
+    # Define special make variable with pathname of original makefile
+    set _vars(MAKEFILE) $file
 
     # Parse it
     _parseFile $file
@@ -186,32 +213,60 @@ proc _tclmake {args} {
     if { $_unrecognized != "" } {
 	puts "Unrecognized command-line options: $_unrecognized. Continuing..."
     }
-
     # Get a default goal if needed
     if { $_goals == {} && [array size _target] != 0 } {
-	# Get the default goals. Only works for simple rules.
-	set _goals $_target(1)
+	# Get the default goal. Only works for simple rules.
+	# First two rules skipped because they are hard coded into program
+	foreach {target_index} [lrange [lsort -dic [array names _target]] 2 end] {
+		set _goals [string trim [lindex $_target($target_index) 0]]
+		if {$_goals ne {}} {break}
+	}
+    }
+
+    # Makefile may define special var containing Tcl script, eval it in
+    # sub-interpreter before starting to update goals
+    if {[info exists _vars(MAKE_INIT)]} {
+	if $_flags(debug) {
+		puts "Executing MAKE_INIT command: $_vars(MAKE_INIT)"
+    	}
+       $makefile_interp eval [lrange [_substVars $_vars(MAKE_INIT)] 0 end]
     }
 
     # Evaluate the goals. Options get processed after regular goals
     if $_flags(debug) {
 	puts "Processing rules..."
     }
-    foreach goal [concat $_goals $_optiongoals] {
+    
+    # Eliminate all redundantly-listed goals
+    set allgoals [concat $_goals $_optiongoals]
+    set allgoals [dict keys [dict create {*}[concat {*}[lmap v $allgoals {set v [list $v 0]}]]]]
+
+try {
+    foreach goal $allgoals {
 	_updateTarget $goal
     }
+} trap {missing_target} {} {
+    
+} finally {
+    cd $_vars(MAKEDIR)
+}
+
 }
 
 #######################################################################
 #### _processCommandLine
 # Extract command options into the _flags array. If an option
-# is undrcognized, place it into the _unrecognized list
+# is unrecognized, place it into the _unrecognized list
 # for later recognition.
 # 
 proc _processCommandLine {args} {
     global _flags _goals _optiongoals _vars _unrecognized
 
     set optiongoals {}
+    
+    # Duplicate GNU Make special variable containing goals specified on
+    # command line
+    lappend _vars(MAKECMDGOALS)
 
     # Process command-line args
     while { $args != "" } {
@@ -219,17 +274,18 @@ proc _processCommandLine {args} {
 	set args [lreplace $args 0 0]
 
 	if ![string match {-*} $option] {
-	    # Got a goal
-	    lappend _goals $option
-	    continue
-
-	} elseif [regexp {^([^ =]*)=(.*)$} $option _ name value] {
-	    # Got a variable value
-	    set _vars($name) $value
-	    lappend _vars(MAKEVARS) $option
-	    continue
+	    if [regexp {^([^ =]*)=(.*)$} $option _ name value] {
+	        # Got a variable value
+	        set _vars($name) $value
+	        lappend _vars(MAKEVARS) $option
+	    } else {
+	        # Got a goal
+	        lappend _goals $option
+	        lappend _vars(MAKECMDGOALS) $option
+	    }
 
 	} else {
+	    set optionval {}
 	    switch -exact -- $option {
 		"-d" -
 		"--debug" {
@@ -237,7 +293,8 @@ proc _processCommandLine {args} {
 		}
 		"-f" -
 		"--file" {
-		    set _flags(file) [lindex $args 0]
+		    set optionval [file norm [lindex $args 0]]
+		    set _flags(file) $optionval
 		    set args [lreplace $args 0 0]
 		}
 		"-h" -
@@ -250,6 +307,20 @@ proc _processCommandLine {args} {
 		"--quiet" {
 		    set _flags(silent) 1
 		}
+		"-t" -
+		"--terminator" {
+		    set _flags(terminal) 1
+		}
+		"-u" -
+		"--update" {
+		    set _flags(update) 1
+		}
+		"-p" -
+		"--packages" -
+		"-r" -
+		"--recursive" {
+		    
+		}
 		default {
 		    # Unknown option. What we do here is add it
 		    # to the list of unrecognized options, so that
@@ -258,10 +329,16 @@ proc _processCommandLine {args} {
 		    # get run.
 		    lappend _unrecognized $option
 		    lappend _optiongoals $option
+		    lappend _vars(MAKECMDGOALS) $option
 		}
 	    }
-	    lappend _vars(MFLAGS) $option
+	    append _vars(MFLAGS) " $option " {*}$optionval
 	}
+    }
+    
+    if {$_flags(terminal) && $_flags(update)} {
+        puts "Can't set both --terminator and --update flags"
+        return 1
     }
     return 0
 }
@@ -273,7 +350,7 @@ proc _processCommandLine {args} {
 # the relevant text!
 # 
 proc _help {} {
-    puts "Notmake, version 0.1. Usage:"
+    puts "tclmake, version 2.0 Usage:"
     puts {
 -d 
 --debug 
@@ -297,6 +374,13 @@ proc _help {} {
 --silent 
 --quiet 
       Print no information at all to stdout or stderr. 
+-t 
+--terminator
+      Treat rules for all given targets as terminator rules (deactivate 
+      recursive updating).
+-u 
+--update 
+      Ignore timestamps and update targets even if they're not out of date. 
 }
 }
 
@@ -328,4 +412,23 @@ proc _catcherror {script} {
 	global errorInfo
 	_error $msg $errorInfo
     }
+}
+
+#######################################################################
+#### MAKE_UPDATE
+# Procedure aliased into sub-interpreter and callable by any command in
+# makefile.  Forces override of mtime-based update decision.
+# 
+# Arg 'target' is any target value that may come up for update
+# 
+# Arg 'condition' is a conditional expression; if it evaluates to 'true', when
+# the target comes up for evaluation, it will be updated regardless of state
+# of dependencies.  If it is 'false' it will not be updated even if out of date
+# 
+proc MAKE_UPDATE {target condition} {
+	global _updated
+	set _updated($target) "MAKE_UPDATE 1"
+	if $condition {
+		set _updated($target) "MAKE_UPDATE 0"
+	}
 }

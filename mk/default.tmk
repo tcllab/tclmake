@@ -62,27 +62,21 @@ sccsclean:
 
 # The option-rule for recursion in all directories
 -r --recursive:
-        @foreach dir [glob -nocomplain *] {
-	    if { [file type $dir] == "directory" && [file executable $dir] } {
-		if { [string toupper $dir] != "$dir" } {
-		    set cwd [pwd]
-		    cd $dir
-		    $(MAKE) $(MFLAGS) $(MAKEVARS) $!
-		    cd $cwd
-		}
-	    }
-	}
+    @foreach dir [glob -nocomplain -type {d x} *] {
+	set cwd [pwd]
+	cd $dir
+	$(MAKE) $(MFLAGS) $(MAKEVARS) $!
+	cd $cwd
+    }
 
 # The option-rule for recursion in package directories
 -p --packages:
         @foreach dir [glob -nocomplain */pkgIndex.tcl] {
 	    set dir [file dirname $dir]
 	    if { [file type $dir] == "directory" && [file executable $dir] } {
-		if { [string toupper $dir] != "$dir" } {
-		    set cwd [pwd]
-		    cd $dir
-		    $(MAKE) $(MFLAGS) $(MAKEVARS) $!
-		    cd $cwd
-		}
+		set cwd [pwd]
+		cd $dir
+		$(MAKE) $(MFLAGS) $(MAKEVARS) $!
+		cd $cwd
 	    }
 	}

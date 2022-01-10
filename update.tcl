@@ -5,6 +5,7 @@
 # @Version: @(#)update.tcl	1.4 05/19/98
 #
 # @Copyright (c) 1997-1998 The Regents of the University of California.
+# Changes Copyright (c) 2022 Stephen E. Huntley
 # All rights reserved.
 #
 # Permission is hereby granted, without written agreement and without
@@ -67,49 +68,68 @@ proc _leeryGlob {args} {
 # is updated anywhere, return 1, otherwise return 0.
 #
 proc _updateTarget {target {caller {}}} {
-    global _target _depend _updated _command _terminal _flags
-
+    global _target _depend _updated _command _terminal _flags _unique
+    
+    if {![info exists _updated($target)]} {set _updated($target) 0}
+    if {$_updated($target) == 1} {return 1}
+    
     if $_flags(debug) {
 	puts "Updating $target"
     }
 
-    # Check if it has already been updated
-    if [info exists _updated($target)] {
-	return 1
-    }
     set updated 0
+    set found 0
+    set dependencies {}
+    set command {}
 
-    # Find the rules in which it appears on the left
-    foreach {id lhs} [array get _target] {
-	set found 0
-
-	if $_flags(debug) {
-	    # Too verbose: _printrule $id
-	}
-
+    # Examine all defined rules from last to first, gather all dependencies
+    # associated with target, grab last-defined command associated with target,
+    # decide if evaluation is terminal or not based on last-defined rule
+    for {set id $_unique} {$id > 0} {incr id -1} {
+        
+	# Check if simple rule
+	set lhs $_target($id)
 	set lhs [eval _leeryGlob $lhs]
 	if { [lsearch -exact $lhs $target] >= 0 } {
-	    set found 1
-	} elseif { $lhs == "" } {
-	    set found 1
-	}
-	if !$found {
-	    continue
+		# Grab id of last-defined rule associated with target
+		if {!$found} {set found $id}
+	} elseif { $lhs ne "" } {
+	    	# It's a simple rule, but doesn't apply to target
+		continue
 	}
 
 	# Get the dependencies, according to rule type
 	set rhs [string trim $_depend($id)]
-	if [regexp "^(\[^:\]*) :+ (\[^:\]*)\$" $rhs _ tpatt dpatt] {
+	if [regexp "^(\[^:\]*):+(\[^:\]*)\$" $rhs _ tpatt dpatt] {
+	    
+	    # Must be a pattern rule
 	    regsub -all {%} $tpatt {*} plist
-	    set dependencies ""
+
+	    # Do pattern substution to see if target fits any rule pattern
 	    foreach p $plist t $tpatt {
 		if [string match $p $target] {
+		    
+		    # Grab id of last-defined rule associated with target
+                 if {!$found} {set found $id}
+                 
+                 # If previously found rule is not the same terminal type,
+                 # ignore
+		    if {$_terminal($id) ne $_terminal($found)} {continue}
+		    
+		    # Only overwrite existing command value if it is empty
+		    if {[string trim $command] eq {}} {set command $_command($id)}
+		    
 		    # OK, it's a match. Convert to regexp and get the stem
 		    regsub -all {\.} $t {\\.} t
 		    regsub -all {%} $t (.*) t
 		    regexp "^$t\$" $target _ stem
+		    
 		    # Now get the dependencies
-		    regsub -all {%} $dpatt $stem dependencies
+		    foreach dp $dpatt {
+			regsub -all {%} $dp $stem dependency
+			lappend dependencies $dependency
+		    }
+		    set dollar_stem $stem
 		}
 	    }
 	    # If there is a set of targets, and the rule is a terminal
@@ -120,6 +140,8 @@ proc _updateTarget {target {caller {}}} {
 	    if { $lhs != "" && $_terminal($id) } {
 		set reverse 1
 		foreach d $dependencies {
+		    # if pattern matches an actual existing file, this rule is not intended
+		    # to apply, so skip
 		    if [file exists $d] {
 			set reverse 0
 			break
@@ -129,7 +151,10 @@ proc _updateTarget {target {caller {}}} {
 		set reverse 0
 	    }
 	    # Do the reverse pattern-matching
-	    if $reverse {
+	    # If this is not the last-defined rule in the makefile that matches
+	    # the target, skip; this is meant to be a standalone case since it
+	    # generates its own targets and dependencies
+	    if {$reverse && $found == $id} {
 		regsub -all {%} $dpatt {*} plist
 		foreach p $plist d $dpatt {
 		    set files [glob -nocomplain -- $p]
@@ -139,11 +164,13 @@ proc _updateTarget {target {caller {}}} {
 			regsub -all {\.} $d {\\.} d
 			regsub -all {%} $d (.*) d
 			foreach f $files {
+			     set stem $tpatt
 			     regexp "^$d\$" $f _ stem
+			     set stem [string map {{ } {\ }} $stem]
 			    # Now get the dependencies and update
 			    regsub -all {%} $tpatt $stem goals
 			    foreach g $goals {
-				set updated [expr {[_update $g $target $f \
+				set updated [expr {[_update $g $target [list $f] \
 					$_terminal($id) $_command($id)] \
 					|| $updated }]
 			    }
@@ -151,21 +178,45 @@ proc _updateTarget {target {caller {}}} {
 		    }
 		}
 		# Now we are done with this rule
-		continue
+		if { !$updated && $_flags(debug) } {
+               	puts "Nothing to do for $target"
+             }
+		return $updated
 	    }
-	} else {
+	} elseif {$lhs ne {}} {
 	    # Otherwise, it must (I think?) be a simple rule
-	    set dependencies [eval _leeryGlob $rhs]
-	}
-	set updated [expr { [_update $target $caller $dependencies \
-		$_terminal($id) $_command($id)] || $updated }]
+	    
+	    # If previously found rule is not the same terminal type, ignore
+	    if {$_terminal($id) ne $_terminal($found)} {continue}
+	    
+	    # Only overwrite existing command value if it is empty	    
+	    if {[string trim $command] eq {}} {set command $_command($id)}
+	    
+	    lappend dependencies {*}[eval _leeryGlob $rhs]
+	} 
+    }
 
+    # At least one rule has been found that applies to target
+    if {$found} {
+        # Make sure target is not listed among dependencies
+        set dependencies [lsearch -inline -all -exact -not $dependencies $target]
+        
+        # Eliminate all redundantly-listed dependencies
+        set dependencies [dict keys [dict create {*}[concat {*}[lmap v $dependencies {set v [list $v 0]}]]]]
+        
+        # Update target
+        set updated [expr { [_update $target $caller $dependencies \
+  		$_terminal($found) $command] || $updated }]
+    } else {
+	puts "No rule to make target '$target', needed by '$caller'.  Stop."
+	return -code 1 -errorcode missing_target
     }
 
     if { !$updated && $_flags(debug) } {
 	puts "Nothing to do for $target"
     }
     # Return 1 if the target was updated in any rule
+    set _updated($target) 1
     return $updated
 }
 
@@ -178,6 +229,12 @@ proc _updateTarget {target {caller {}}} {
 #
 proc _update {target caller dependencies terminal cmd} {
     global _updated _flags _goals
+    upvar dollar_stem stem
+    if {![info exists stem]} {set stem {}}
+    if {![info exists _updated($target)]} {set _updated($target) 0}
+
+    if $_flags(terminal) {set terminal 1}
+    if $_flags(update) {set terminal 0}
 
     # If the caller is empty, then this must be a top-level call,
     # so use the goals
@@ -195,17 +252,18 @@ proc _update {target caller dependencies terminal cmd} {
     # and, if any is updated, then this target is out of date.
     #
     set outofdate 0
-    if { ![file exists $target] || $dependencies == "" } {
+    if { ![file exists $target] } {
 	set outofdate 1
     }
     if $terminal {
 	foreach d $dependencies {
 	    if ![file exists $d] {
-		set outofdate 0
+            puts "No rule to make target '$d', needed by '$target'.  Stop."
+            return -code 1 -errorcode missing_target
 	    }
 	}
     }
-    
+
     # Get modification date just once
     if [file exists $target] {
 	set mtime [file mtime $target]
@@ -213,6 +271,7 @@ proc _update {target caller dependencies terminal cmd} {
 	set mtime {}
     }
     set dollarquery {}
+    set _updated($target) 1
     foreach d $dependencies {
 	if { $mtime != "" } {
 	    # Check file dates
@@ -248,9 +307,37 @@ proc _update {target caller dependencies terminal cmd} {
 	    }
 	} 
     }
+    
+    # Check if forcing update via command-line argument
+    if $_flags(update) {
+    	if {$_updated($target) != 1} {
+       	set _updated($target) 0
+       	if $_flags(debug) {
+       		if {!$outofdate} {
+			puts "Update override via switch --update"
+             }
+       	}
+       	set outofdate 1
+ 	}
+    }
 
+    # Check special case where _updated may have been set by proc MAKE_UPDATE.
+    # If so, override computed outofdate value
+    lassign $_updated($target) MU upd
+    if {$MU eq {MAKE_UPDATE}} {
+        set outofdate [expr !$upd]
+        set _updated($target) 1
+    }
+    
+    # Mark this target as updated, as long as it isn't an option, or terminal
+    set _updated($target) 1
+    if {[string match {-*} $target] || $terminal} {
+        set _updated($target) 0
+    }
+    
     # If this target needs updating, update it
     if $outofdate {
+	# Define automatic variables
 	set cmd [_substVars $cmd]                 ;# substitute variables
 	regsub -all {\$\!} $cmd $caller cmd       ;# the caller
 	regsub -all {\$\@} $cmd $target cmd       ;# the target    
@@ -258,16 +345,18 @@ proc _update {target caller dependencies terminal cmd} {
 		[lindex $dependencies 0] cmd      ;# the first dependency 
 	regsub -all {\$\?} $cmd $dollarquery cmd  ;# updated dependencies
 	regsub -all {\$\^} $cmd $dependencies cmd ;# all dependencies
-	if [info exists stem] {
-	    regsub -all {\$\*} $cmd $stem cmd     ;# matched stem
-	}
+	regsub -all {\$\*} $cmd $stem cmd     ;# matched stem
 
 	if $_flags(debug) {
 	    puts "Executing command to update $target:"
 	}
-	# Scan for and remove any leading "@" signs. If there is
-	# no leading @-sign, print the command.
-	# append cmd \n
+
+	# Grab existing global vars from sub-interpreter, so any newly-created global
+	# vars can be deleted afterward
+	set makefile_globalVars [$::makefile_interp eval info globals]
+
+	set workingDir [pwd]
+
 	while { [regexp "^(\[^\n\]*)\n(.*)\$" $cmd _ line cmd] } {
 	    # Read a line and check for an @
 	    set print 1
@@ -286,10 +375,10 @@ proc _update {target caller dependencies terminal cmd} {
 		puts $execute
 	    }
 	    # Evaluate it
-	    set errorcode [catch {uplevel #0 $execute} msg]
+	    set errorcode [catch {$::makefile_interp eval $execute} msg]
 	    if $errorcode {
 		# There was a return error code
-		if { $errorcode == 3 } {
+		if { $errorcode > 1 } {
 		    # The error was from a break, so stop processing
 		    # this command
 		    break
@@ -298,10 +387,19 @@ proc _update {target caller dependencies terminal cmd} {
 		}
 	    }
 	}
+
+	cd $workingDir
+
+	#Delete any newly-created global vars after running rule command
+	lappend makefile_deleteGlobalsList
+	foreach gv [$::makefile_interp eval info globals] {
+	    if {$gv ni $makefile_globalVars} {
+	        lappend makefile_deleteGlobalsList $gv
+    	    }
+	}
+	$::makefile_interp eval unset -nocomplain $makefile_deleteGlobalsList
+
     }
-    # Mark this target as updated, as long as it isn't an option
-    if ![string match {-*} $target] {
-	set _updated($target) $outofdate
-    }
+    
     return $outofdate
 }

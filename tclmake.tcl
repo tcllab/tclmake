@@ -3,6 +3,7 @@
 # Author: John Reekie
 #
 # Copyright (c) 1998 The Regents of the University of California.
+# Changes Copyright (c) 2022 Stephen E. Huntley
 # All rights reserved.
 # 
 # Permission is hereby granted, without written agreement and without
@@ -32,7 +33,7 @@
 # Based on pp 344-346 of Harrison and McClellan's "Effective Tcl/Tk
 # Programming" book
 
-package provide tclmake 1.0
+package provide tclmake 2.0
 global env auto_path
 set env(TCLMAKE_LIBRARY) [file dirname [info script]]
 if { [lsearch -exact $auto_path $env(TCLMAKE_LIBRARY)] == -1 } {

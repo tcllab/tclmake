@@ -5,6 +5,7 @@
 # $Id$
 #
 # Copyright (c) 1997-1998 The Regents of the University of California.
+# Changes Copyright (c) 2022 Stephen E. Huntley
 # All rights reserved.
 #
 # Permission is hereby granted, without written agreement and without
@@ -30,17 +31,55 @@
 #                                        COPYRIGHTENDKEY
 #######################################################################
 
+#######################################################################
+#### _printrule
+# Helper proc to print sensible debug messages about parsed rules
+#
 proc _printrule {id} {
     global _flags _target _depend _terminal
 
     if $_flags(debug) {
+	set colon :
+	if {$_terminal($id)} {set colon ::}
+
 	if { $_target($id) == "" } {
 	    puts "Rule $id = $_depend($id)"
 	} else {
-	    puts "Rule $id = $_target($id) : $_depend($id)"
+	    puts "Rule $id = $_target($id) $colon $_depend($id)"
 	}
     }
 }
+
+#######################################################################
+# Hard code definition of '--packages' and '--recursive' rules so they are
+# always available to include in dependency lists and can be specified on
+# command line
+set id [incr _unique]
+set _target($id) "-p --packages"
+set _depend($id) ""
+set _terminal($id) 0
+set _command($id) {        @foreach dir [glob -nocomplain */pkgIndex.tcl] {
+                set dir [file dirname $dir]
+                if { [file type $dir] == "directory" && [file executable $dir] } {
+                        cd $dir
+                        $(MAKE) $(MFLAGS) $(MAKEVARS) $!
+                }
+        }
+    
+}
+_printrule $id
+
+set id [incr _unique]
+set _target($id) "-r --recursive"
+set _depend($id) ""
+set _terminal($id) 0
+set _command($id) {        @foreach dir [glob -nocomplain -type {d x} *] {
+                cd $dir
+                $(MAKE) $(MFLAGS) $(MAKEVARS) $!
+    }
+
+}
+_printrule $id
 
 #######################################################################
 #### _parseFile
@@ -63,13 +102,21 @@ proc _parseFile {filename} {
     # Space is some white-space
     set spaces "\[ \t]+"
     # stem is anything except space, colon, or period 
-    set stem "\[^ \t:\]+"
+    set stem "\[^ \t:.\]+"
     # pattern is anything with a prefix, suffix, and a percent in the middle
     set ppatt "$word%$word"
 
+    set break 0
     # Read a line at a time
-    while { ![eof $fd] } {
-	set line [gets $fd]
+    while { ![eof $fd] || $break } {
+        
+	# Fix bug where line after rule definition is ignored
+	if {$break} {
+       	set break 0
+	} else {
+       	set line [gets $fd]
+	}
+	
 	set foundrule 0
 
 	# If the line ends with a backslash, continue it
@@ -98,11 +145,12 @@ proc _parseFile {filename} {
 
 	} elseif [regexp "^${space}proc${spaces}(.*)$" $line] {
 	    # Define a Tcl proc
-	    set tclproc $line
+	    set tclproc $line\n
 	    while { ![eof $fd] && ![info complete $tclproc] } {
-		append tclproc [gets $fd]
+		append tclproc [gets $fd]\n
 	    }
-	    uplevel #0 $tclproc
+
+	    $::makefile_interp eval $tclproc
 
 	} elseif [regexp "^${space}(.*)${space}=${space}(.*)$" $line \
 		_ name value] {
@@ -115,13 +163,18 @@ proc _parseFile {filename} {
 		    puts "$name = $value"
 		}
 	    }
-	} elseif [regexp "^\.($stem)\.($stem)${space}:$space$" \
+	} elseif [regexp "^\\.($stem)\\.($stem)${space}:$space$" $line\
 		_ dep tgt] {
 	    # Suffix rule -- convert and save as pattern rule
 	    set id [incr _unique]
 	    set _target($id) ""
-	    set _depend($id) "%.$tgt %.$dep"
+	    #set _depend($id) "%.$tgt %.$dep"
+	    set _depend($id) "%.[string trim $tgt] : %.[_substVars [string trim $dep]]"
+	    set _terminal($id) 0
 	    set foundrule 1
+	    if $_flags(debug) {
+	        puts "\nSuffix rule:"
+	    }
 
 	} elseif [regexp "^(-\[^:\]*)${space}:$space\$" $line _ tgt] {
 	    # An option-rule. Remember it and remove it from the
@@ -137,6 +190,9 @@ proc _parseFile {filename} {
 		}
 	    }
 	    set foundrule 1
+	    if $_flags(debug) {
+	        puts "\nOption rule:"
+	    }
 
 	} elseif { [regexp {%} $line] \
 		&& [regexp "^(\[^:\]*)(:+)(\[^:\]*)$" $line \
@@ -144,30 +200,45 @@ proc _parseFile {filename} {
 	    # Pattern rule with implicit targets
 	    set id [incr _unique]
 	    set _target($id) ""
-	    set _depend($id) "[string trim $tgt] $colons [string trim $dep]"
+	    set _depend($id) "[string trim $tgt] $colons [_substVars [string trim $dep]]"
 	    set _terminal($id) [expr {$colons == "::"}]
 	    set foundrule 1
+	    if $_flags(debug) {
+		puts "\nPattern rule with implicit targets:"
+	    }
 
-	} elseif { [regexp {%} $line] \
-		&& [regexp "^(\[^:\]*):(\[^:\]*)(:+)(\[^:\]*)$" $line _ \
+	} elseif { (1 || [regexp {%} $line]) \
+		&& [regexp "^(\[^:\]*):(\[^:\]+)(:+)(\[^:\]*)$" $line _ \
 		lhs tgt colons dep] } {
 	    # Pattern rule with explicit targets
 	    set id [incr _unique]
-	    set _target($id) "$lhs"
-	    set _depend($id) "[string trim $tgt] $colons [string trim $dep]"
+	    set _target($id) [_substVars $lhs]
+	    set _depend($id) "[_substVars [string trim $tgt]] $colons [_substVars [string trim $dep]]"
 	    set _terminal($id) [expr {$colons == "::"}]
 	    set foundrule 1
+	    if $_flags(debug) {
+		puts "\nPattern rule with explicit targets:"
+	    }
 
 	} elseif { ![regexp {%} $line] \
-		&& [regexp "^($word)${space}(:+)(\[^:\]*)$" $line _ \
+		&& [regexp "^(\[^:\]+)${space}(:+)(\[^:\]*)$" $line _ \
 		tgt colons dep] } {
 	    # Simple rule
-	    set id [incr _unique]
 
-	    set _target($id) [_substVars $tgt]
-	    set _depend($id) [_substVars $dep]
+	    set tgt [_substVars [string trim $tgt]]
+	    set dep [string trim [_substVars $dep]]
+	    set terminal [expr {$colons == "::"}]
+
+	    set id [incr _unique]
+	    set _target($id) $tgt
+	    append _depend($id) " $dep"
+	    set _depend($id) [string trim $_depend($id)]
+	    
 	    set _terminal($id)  [expr {$colons == "::"}]
 	    set foundrule 1
+	    if $_flags(debug) {
+		puts "\nSimple rule:"
+	    }
 
 	} else {
 	    puts "Unrecognized rule: $line"
@@ -183,9 +254,11 @@ proc _parseFile {filename} {
 		if [regexp "^\[ \t\]+\[^ \t\]" $line] {
 		    append command $line\n
 		} else {
+		    set break 1
 		    break
 		}
 	    }
+	    
 	    set _command($id) $command
 	}
     }
@@ -294,9 +367,14 @@ proc _getVar {varname} {
 	} else {
 	    # Nope -- try the environment
 	    if [info exists env($varname)] {
-		set _vars($varname) $env($varname)
+		#set _vars($varname) $env($varname)
+		set v $env($varname)
 	    } else {
-		error "Unknown variable: $varname"
+		#error "Unknown variable: $varname"
+		set v {}
+		if $_flags(debug) {
+		    puts "No value found for variable $varname. Setting to empty string."
+		}
 	    }
 	}
     }

@@ -31,7 +31,7 @@
 ##########################################################################
 
 
-package ifneeded tclmake 1.0 \
+package ifneeded tclmake 2.0 \
 	[list source [file join $dir tclmake.tcl]]
 
 
