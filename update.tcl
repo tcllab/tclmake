@@ -5,7 +5,7 @@
 # @Version: @(#)update.tcl	1.4 05/19/98
 #
 # @Copyright (c) 1997-1998 The Regents of the University of California.
-# Changes Copyright (c) 2022 Stephen E. Huntley
+# Changes Copyright (c) 2022 Stephen E. Huntley <stephen.huntley@alum.mit.edu>
 # All rights reserved.
 #
 # Permission is hereby granted, without written agreement and without
