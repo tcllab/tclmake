@@ -85,7 +85,7 @@ sccsclean:
 	    }
 	}
 
-warning:
+%:
 	@puts [string map {\t {}} "
 	You have invoked the default makefile at mk/default.tmk in the tclmake install
 	location.  Rules for specifying your own makefile are at: doc/parsing.html\n
