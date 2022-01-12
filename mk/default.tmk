@@ -5,6 +5,7 @@
 # @Version: @(#)default.not	1.1 04/13/98
 #
 # @Copyright (c) 1997 The Regents of the University of California.
+# Changes Copyright (c) 2022 Stephen E. Huntley <stephen.huntley@alum.mit.edu>
 # All rights reserved.
 #
 # Permission is hereby granted, without written agreement and without
@@ -33,6 +34,9 @@
 # To change these rules, either edit this file, or
 # modify your notmake startup script to point to
 # a different file.
+
+# Cause a warning to be printed that the default makefile is being used
+warning:
 
 # Update the Tcl index file
 tclIndex: *.tcl *.tk *.itcl *.itk
@@ -80,3 +84,11 @@ sccsclean:
 		cd $cwd
 	    }
 	}
+
+warning:
+	@puts [string map {\t {}} "
+	You have invoked the default makefile at mk/default.tmk in the tclmake install
+	location.  Rules for specifying your own makefile are at: doc/parsing.html\n
+	The first default looked for is makefile.tmk in the current directory.  The
+	makefile may also be specified explicitly on the command line with the -f option
+	"]
