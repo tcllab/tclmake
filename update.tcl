@@ -207,7 +207,7 @@ proc _updateTarget {target {caller {}}} {
         # Update target
         set updated [expr { [_update $target $caller $dependencies \
   		$_terminal($found) $command] || $updated }]
-    } else {
+    } elseif {![file exists $target]} {
 	puts "No rule to make target '$target', needed by '$caller'.  Stop."
 	return -code 1 -errorcode missing_target
     }
