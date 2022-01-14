@@ -44,6 +44,7 @@
 proc _leeryGlob {args} {
     set result {}
     foreach patt $args {
+	set patt [string map {| :} $patt]
 	set files [glob -nocomplain -- $patt]
 	if { $files != "" } {
 	    set result [concat $result $files]
@@ -76,7 +77,6 @@ proc _updateTarget {target {caller {}}} {
     if $_flags(debug) {
 	puts "Updating $target"
     }
-
     set updated 0
     set found 0
     set dependencies {}
