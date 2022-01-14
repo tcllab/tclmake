@@ -68,7 +68,7 @@ proc _leeryGlob {args} {
 # is updated anywhere, return 1, otherwise return 0.
 #
 proc _updateTarget {target {caller {}}} {
-    global _target _depend _updated _command _terminal _flags _unique
+    global _target _depend _updated _command _terminal _flags _unique _target_type
     
     if {![info exists _updated($target)]} {set _updated($target) 0}
     if {$_updated($target) == 1} {return 1}
@@ -81,6 +81,7 @@ proc _updateTarget {target {caller {}}} {
     set found 0
     set dependencies {}
     set command {}
+    set target_cmd_type {}
 
     # Examine all defined rules from last to first, gather all dependencies
     # associated with target, grab last-defined command associated with target,
@@ -116,8 +117,13 @@ proc _updateTarget {target {caller {}}} {
                  # ignore
 		    if {$_terminal($id) ne $_terminal($found)} {continue}
 		    
+		    # Ensure explicit target command overrides implicit
+		    if {$target_cmd_type eq {implicit}
+                  		   && $_target_type($id) eq {explicit}} {set command {}}
+		    
 		    # Only overwrite existing command value if it is empty
 		    if {[string trim $command] eq {}} {set command $_command($id)}
+		    set target_cmd_type $_target_type($id)
 		    
 		    # OK, it's a match. Convert to regexp and get the stem
 		    regsub -all {\.} $t {\\.} t
@@ -189,8 +195,13 @@ proc _updateTarget {target {caller {}}} {
 	    # If previously found rule is not the same terminal type, ignore
 	    if {$_terminal($id) ne $_terminal($found)} {continue}
 	    
-	    # Only overwrite existing command value if it is empty	    
+	    # Ensure explicit target command overrides implicit
+	    if {$target_cmd_type eq {implicit}
+        		    && $_target_type($id) eq {explicit}} {set command {}}
+        		 
+	    # Only overwrite existing command value if it is empty
 	    if {[string trim $command] eq {}} {set command $_command($id)}
+	    set target_cmd_type $_target_type($id)
 	    
 	    lappend dependencies {*}[eval _leeryGlob $rhs]
 	} 

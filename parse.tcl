@@ -58,6 +58,7 @@ set id [incr _unique]
 set _target($id) "-p --packages"
 set _depend($id) ""
 set _terminal($id) 0
+set _target_type($id) explicit
 set _command($id) {        @foreach dir [glob -nocomplain */pkgIndex.tcl] {
                 set dir [file dirname $dir]
                 if { [file type $dir] == "directory" && [file executable $dir] } {
@@ -73,6 +74,7 @@ set id [incr _unique]
 set _target($id) "-r --recursive"
 set _depend($id) ""
 set _terminal($id) 0
+set _target_type($id) explicit
 set _command($id) {        @foreach dir [glob -nocomplain -type {d x} *] {
                 cd $dir
                 $(MAKE) $(MFLAGS) $(MAKEVARS) $!
@@ -90,6 +92,7 @@ _printrule $id
 proc _parseFile {filename} {
     global _vars _target _depend _command 
     global _unique _flags _terminal _unrecognized
+    global _target_type
 
     # Open the file
     set fd [open $filename]
@@ -172,6 +175,7 @@ proc _parseFile {filename} {
 	    set _depend($id) "%.[string trim $tgt] : %.[_substVars [string trim $dep]]"
 	    set _terminal($id) 0
 	    set foundrule 1
+	    set _target_type($id) implicit
 	    if $_flags(debug) {
 	        puts "\nSuffix rule:"
 	    }
@@ -190,6 +194,7 @@ proc _parseFile {filename} {
 		}
 	    }
 	    set foundrule 1
+	    set _target_type($id) explicit
 	    if $_flags(debug) {
 	        puts "\nOption rule:"
 	    }
@@ -203,6 +208,7 @@ proc _parseFile {filename} {
 	    set _depend($id) "[string trim $tgt] $colons [_substVars [string trim $dep]]"
 	    set _terminal($id) [expr {$colons == "::"}]
 	    set foundrule 1
+	    set _target_type($id) implicit
 	    if $_flags(debug) {
 		puts "\nPattern rule with implicit targets:"
 	    }
@@ -216,6 +222,7 @@ proc _parseFile {filename} {
 	    set _depend($id) "[_substVars [string trim $tgt]] $colons [_substVars [string trim $dep]]"
 	    set _terminal($id) [expr {$colons == "::"}]
 	    set foundrule 1
+	    set _target_type($id) explicit
 	    if $_flags(debug) {
 		puts "\nPattern rule with explicit targets:"
 	    }
@@ -236,6 +243,7 @@ proc _parseFile {filename} {
 	    
 	    set _terminal($id)  [expr {$colons == "::"}]
 	    set foundrule 1
+	    set _target_type($id) explicit
 	    if $_flags(debug) {
 		puts "\nSimple rule:"
 	    }
