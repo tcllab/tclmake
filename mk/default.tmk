@@ -36,7 +36,8 @@
 # a different file.
 
 # Cause a warning to be printed that the default makefile is being used
-warning:
+warning: x
+	@return
 
 # Update the Tcl index file
 tclIndex: *.tcl *.tk *.itcl *.itk
@@ -85,10 +86,12 @@ sccsclean:
 	    }
 	}
 
-%:
+x:
 	@puts [string map {\t {}} "
 	You have invoked the default makefile at mk/default.tmk in the tclmake install
 	location.  Rules for specifying your own makefile are at: doc/parsing.html\n
 	The first default looked for is makefile.tmk in the current directory.  The
 	makefile may also be specified explicitly on the command line with the -f option
 	"]
+%: x
+	@return
