@@ -1,4 +1,4 @@
-# tclmake 2022, v. 2.0
+# tclmake 2022, v. 2.1
 
 tclmake is not meant to be a clone of standard make, but it borrows many
 features and adds a few useful features of its own. Anyone with experience 
@@ -20,31 +20,44 @@ first release.
 
 What a tclmake makefile looks like:
 
+    # Value of MAKE_INIT var is treated as a Tcl script and executed after file
+    # is parsed but before goal updating:
     MAKE_INIT = make_init
+    
+    # Make variables defined:
     SDX = lib/sdx.kit
     RUNTIME = bin/basekit
     
+    # Procs can be defined and called within rule recipe script:
     proc make_init {} {
     	set ::env(PATH) $::env(PATH):[file norm ~/bin]
     }
     
+    # An option rule:
     --test-wrap :
+    	# Automatic variables like "$!" inserted into Tcl script by macro
+    	# substitution before execution, as GNU Make does:
     	set target "$!"
     	if {![file exists $target]} return
     	set vfs [file root $target].vfs
     	lassign [exec basekit $(SDX) version $target] date time version
     	lassign [exec basekit $(SDX) version $vfs] vfsdate vfstime vfsversion
+    	# Proc MAKE_UPDATE drives whether a target is updated based on given
+    	# conditional, independent of file mtimes of prerequisites:
     	MAKE_UPDATE $target [list $version ne $vfsversion]
     
+    # A GNU make-style pattern rules:
     %.kit : %.vfs --test-wrap
-    	puts "Wrapping $@:"
+    	@puts "Wrapping $@:"
+    	# Make vars substituted into Tcl script. If a var is undefined, an empty
+    	string is used:
     	exec basekit $(SDX) wrap "$@" -vfs "$<" $(WRAP_OPTIONS)
     
     %.exe : %.kit
     	if {"$(RUNTIME)" eq ""} {
     		error "Make variable RUNTIME must be defined to make starpack."
     	}
-    	puts "Wrapping $@:"
+    	@puts "Wrapping $@:"
     	set vfs [file root "$@"].vfs
     	exec basekit $(SDX) wrap "$@" -vfs $vfs -runtime "$(RUNTIME)" $(WRAP_OPTIONS)
 
@@ -126,9 +139,35 @@ rule is never marked as updated, so it can be used multiple times as
 prerequisites of different rules to extend how those rules' targets are updated. 
 This is made easier with tclmake's novel '$!' automatic variable, which expands 
 to the name of the preceding target whose evaluation has caused the current 
-target to be evaluated.
+target to be evaluated.  Thus in the first example, the rule "--test-wrap" uses 
+the automatic variable "$!" which is set to the name of the file that matched 
+the pattern "%.kit".
 
 # Features added since tclmake 1.0:
+
+Another example makefile:
+
+    # keyword "MAKE_EVAL" at start of make var definition causes var value to
+    # have Tcl command and variable substitution done on it and result stored 
+    # in var:
+    MAKE_EVAL SOURCES = [glob examples/*.f90]
+    MAKE_EVAL EXES    = [string map {.f90 .exe} {$(SOURCES)}]
+    
+    # Simple rule. First target in file becomes default goal:
+    all:    $(EXES)
+       @puts "prereqs:$^"
+       
+    # Simple rule without recipe adds prerequisites to targets:
+    $(EXES): dde_solver_m.o
+    
+    # Pattern rule:
+    %.exe : %.f90
+       exec gfortran -o $@ $< dde_solver_m.o
+    
+    # This target is added as a dependency to all files in $(EXES) var:
+    dde_solver_m.o : dde_solver_m.f90
+       exec gfortran -c $<
+
 
 ## MAKE_INIT
 
@@ -143,6 +182,12 @@ takes.
 ## New make variables
 
 Added standard make variables MAKEFILE and MAKECMDGOALS as GNU make does.
+
+## MAKE_EVAL
+
+If a make variable defintion line begins with the keyword MAKE_EVAL, the 
+variable value is treated as Tcl code, and command and variable substitution is 
+done on it, and the result stored in the variable.
 
 ## MAKE_UPDATE proc
 
@@ -159,19 +204,22 @@ the script of one of the target's prerequisites, when prerequisite updating
 is done and it's time for the target to be updated, the target's update script 
 will be run or not based on the result of the MAKE_UPDATE conditional.
 
-The example makefile at the top of this document shows rules for wrapping a 
-starkit and creating a starpack.  If you want to know if a wrapped starkit 
-needs to be updated from its unwrapped counterpart, you need to know if any 
-file in the unwrapped starkit has changed.  In a standard GNU makefile, you'd 
-have to include all files in the unwrapped starkit as dependencies, and ensure 
-this list of files remains current as your starkit is developed.
+The example makefile at the top of this document includes an example use 
+of MAKE_UPDATE. It shows rules for wrapping a starkit and creating a starpack 
+(a single-file executable containing code files).  If you want to know if a 
+wrapped starkit needs to be updated from its unwrapped counterpart, you need to 
+know if any file in the unwrapped starkit has changed.  In a standard GNU 
+makefile, you'd have to include all files in the unwrapped starkit as 
+dependencies, and ensure this list of files remains current as your starkit is 
+developed.
 
-Fortunately the sdx package includes a command to create a version stamp for a 
-starkit, which operates identically on a wrapped and an unwrapped starkit.  The 
-option rule '--test-wrap' uses the '$!' automatic variable to generate version 
-stamps for a wrapped and unwrapped starkit without having to know its name 
-specifically, and the MAKE_UPDATE proc is used to compare the version 
-stamps and mark if the wrapped starkit needs to be regenerated.
+Fortunately the sdx package used to wrap starkits includes a command to create 
+a starkit version stamp, which operates identically on a wrapped and an 
+unwrapped starkit.  The option rule '--test-wrap' uses the '$!' automatic 
+variable to generate version stamps for a wrapped and unwrapped starkit without 
+having to know its name specifically, and the MAKE_UPDATE proc is used to 
+compare the version stamps and mark if the wrapped starkit needs to be 
+regenerated.
 
 Since an option rule is never marked as updated, the '--test-wrap' rule is 
 generic, and can be used as a prerequisite for any number of starkits in a 
@@ -206,6 +254,15 @@ The '--recursive' and '--packages' option rules mentioned in the original docs
 are now hard-coded into the program and are always available without having to 
 put them in a makefile.  The hard-coded rules can be overridden simply by 
 defining new option rules by those names in a makefile.
+
+# Colon character substitute in file names
+
+If a filename used as a rule target or prerequisite includes a colon (e.g. a 
+Windows drive letter "C:/"), the rule will be parsed incorrectly.  This can be 
+a serious problem for GNU make users on Windows. tclmake allows the character 
+"|" to replace a colon in a target or prerequisite to ensure proper parsing of 
+the rule.  Automatic variables are set to the proper filename including the 
+colon.
 
 ## Bug fixes
 
