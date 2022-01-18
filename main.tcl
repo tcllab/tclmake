@@ -116,7 +116,7 @@ proc tclmake {args} {
 	set _vars(MAKEDIR) [pwd]
 	set _vars(MAKEVARS) ""
 	set _vars(MFLAGS) ""
-	eval _tclmake [lrange [list $args] 0 end]
+	_tclmake {*}$args
     }
     set script [subst -nocommands $script]
     
@@ -143,7 +143,7 @@ proc _tclmake {args} {
     puts [pwd]
 
     # Process command-line arguments
-    if [eval _processCommandLine $args] {
+    if [_processCommandLine {*}$args] {
 	return 1
     }
 
@@ -229,7 +229,7 @@ proc _tclmake {args} {
 	if $_flags(debug) {
 		puts "Executing MAKE_INIT command: $_vars(MAKE_INIT)"
     	}
-       $makefile_interp eval [lrange [_substVars $_vars(MAKE_INIT)] 0 end]
+       $makefile_interp eval [_substVars $_vars(MAKE_INIT)]
     }
 
     # Evaluate the goals. Options get processed after regular goals

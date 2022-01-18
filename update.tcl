@@ -90,7 +90,7 @@ proc _updateTarget {target {caller {}}} {
         
 	# Check if simple rule
 	set lhs $_target($id)
-	set lhs [eval _leeryGlob $lhs]
+	set lhs [_leeryGlob {*}$lhs]
 	if { [lsearch -exact $lhs $target] >= 0 } {
 		# Grab id of last-defined rule associated with target
 		if {!$found} {set found $id}
@@ -119,7 +119,9 @@ proc _updateTarget {target {caller {}}} {
 		    
 		    # Ensure explicit target command overrides implicit
 		    if {$target_cmd_type eq {implicit}
-                  		   && $_target_type($id) eq {explicit}} {set command {}}
+                  		   && $_target_type($id) eq {explicit}
+                  		   && $_command($id) ne {}
+                 } {set command {}}
 		    
 		    # Only overwrite existing command value if it is empty
 		    if {[string trim $command] eq {}} {set command $_command($id)}
@@ -197,13 +199,15 @@ proc _updateTarget {target {caller {}}} {
 	    
 	    # Ensure explicit target command overrides implicit
 	    if {$target_cmd_type eq {implicit}
-        		    && $_target_type($id) eq {explicit}} {set command {}}
+        		    && $_target_type($id) eq {explicit}
+        		    && $_command($id) ne {}
+	    } {set command {}}
         		 
 	    # Only overwrite existing command value if it is empty
 	    if {[string trim $command] eq {}} {set command $_command($id)}
 	    set target_cmd_type $_target_type($id)
 	    
-	    lappend dependencies {*}[eval _leeryGlob $rhs]
+	    lappend dependencies {*}[_leeryGlob {*}$rhs]
 	} 
     }
 

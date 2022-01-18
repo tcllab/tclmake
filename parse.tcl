@@ -161,6 +161,11 @@ proc _parseFile {filename} {
 	    # so as not to overwrite command-line vars.
 	    set name [string trim $name]
 	    if ![info exists _vars($name)] {
+	 	if {[string first MAKE_EVAL $name] == 0} {
+	 		set name [string trimleft [string range $name 9 end]]
+	 		set value [_substVars $value]
+	 		set value [$::makefile_interp eval subst [list $value]]
+	 	}
 		set _vars($name) $value
 		if $_flags(debug) {
 		    puts "$name = $value"
