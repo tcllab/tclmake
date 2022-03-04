@@ -325,15 +325,15 @@ proc _update {target caller dependencies terminal cmd} {
     
     # Check if forcing update via command-line argument
     if $_flags(update) {
-    	if {$_updated($target) != 1} {
-       	set _updated($target) 0
-       	if $_flags(debug) {
-       		if {!$outofdate} {
-			puts "Update override via switch --update"
-             }
-       	}
-       	set outofdate 1
- 	}
+    	
+   	set _updated($target) 0
+   	if $_flags(debug) {
+      		if {!$outofdate} {
+                puts "Update override via switch --update"
+            }
+   	}
+   	set outofdate 1
+ 	
     }
 
     # Check special case where _updated may have been set by proc MAKE_UPDATE.
