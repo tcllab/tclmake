@@ -9,8 +9,8 @@ expressed as a single Tcl script, rather than a discrete sequence of shell
 commands.
 
 If you've ever struggled with writing a GNU makefile and thought, 'this would 
-go a lot easier if I could write the update logic in Tcl', then tclmake may be 
-the tool for you.
+go a lot easier if I could write the update logic in a dynamic language', then
+tclmake may be the tool for you.
 
 This file is meant to be an introduction and a supplement to the original docs, 
 which are still valid as to the features that existed up to the point of the 
@@ -20,7 +20,7 @@ first release.
 
 What a tclmake makefile looks like:
 
-    # Value of MAKE_INIT var is treated as a Tcl script and executed after file
+    # Value of MAKE_INIT var is treated as a Tcl script and evaluated after file
     # is parsed but before goal updating:
     MAKE_INIT = make_init
     
@@ -36,7 +36,7 @@ What a tclmake makefile looks like:
     # An option rule:
     --test-wrap :
     	# Automatic variables like "$!" inserted into Tcl script by macro
-    	# substitution before execution, as GNU Make does:
+    	# substitution before evalution, as GNU Make does:
     	set target "$!"
     	if {![file exists $target]} return
     	set vfs [file root $target].vfs
@@ -46,7 +46,7 @@ What a tclmake makefile looks like:
     	# conditional, independent of file mtimes of prerequisites:
     	MAKE_UPDATE $target [list $version ne $vfsversion]
     
-    # A GNU make-style pattern rules:
+    # GNU make style pattern rules:
     %.kit : %.vfs --test-wrap
     	@puts "Wrapping $@:"
     	# Make vars substituted into Tcl script. If a var is undefined, an empty
