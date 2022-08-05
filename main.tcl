@@ -228,7 +228,7 @@ proc _tclmake {args} {
     if {[info exists _vars(MAKE_INIT)]} {
 	if $_flags(debug) {
 		puts "Executing MAKE_INIT command: $_vars(MAKE_INIT)"
-    	}
+	}
        $makefile_interp eval [_substVars $_vars(MAKE_INIT)]
     }
 
@@ -350,34 +350,34 @@ proc _processCommandLine {args} {
 # the relevant text!
 # 
 proc _help {} {
-    puts "tclmake, version 2.0 Usage:"
+    puts "tclmake, version 2.2 Usage:"
     puts {
 -d 
 --debug 
       Print debugging information. 
--f filename 
---file filename 
-      Use this file as the tclmakefile. 
+-f <filename> 
+--file <filename> 
+      Use specified file as the tclmakefile. 
 -h 
 --help 
       Print out this list of options. 
 -p 
 --packages 
       Recursively process directories that contain a pkgIndex.tcl file.
-      This option is unique to tclmake 
 -r 
 --recursive 
-      After processing the current directory, tclmake will process
-      sub-directories (see below for more information). This option is
-      unique to tclmake 
+      After processing the current directory, tclmake will be re-executed in
+      sub-directories using the same command-line settings.  The recursion
+      will continue through the entire hierarchy of sub-directories.
 -s 
 --silent 
 --quiet 
       Print no information at all to stdout or stderr. 
 -t 
 --terminator
-      Treat rules for all given targets as terminator rules (deactivate 
-      recursive updating).
+      Treat rules for all given goals as terminator rules.  I.e., do not
+      attempt to follow chain of dependencies, assume all dependencies for
+      specified goals are up to date.
 -u 
 --update 
       Ignore timestamps and update targets even if they're not out of date. 

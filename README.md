@@ -98,8 +98,8 @@ prerequisites are treated as glob patterns.  The Tcl script supplied with the
 rule is executed individually for each file found to match the glob patterns.
 
 The above rule will find all image files of the specified types, and run the 
-script individually for each file, with the '$@' variable defined as 
-$(IMAGE_DIR) and '$<' defined as the image filename.
+script individually for each file, with the `$@` variable defined as 
+`$(IMAGE_DIR)` and `$<` defined as the image filename.
 
 A rule of this type can also use pattern matching (with the '%' treated as a 
 '*' for globbing purposes), e.g.:
@@ -137,10 +137,10 @@ dash.  If specified on the command line, they are guaranteed to be updated
 last; so they are useful for defining a final packaging or CI step.  An option 
 rule is never marked as updated, so it can be used multiple times as 
 prerequisites of different rules to extend how those rules' targets are updated. 
-This is made easier with tclmake's novel '$!' automatic variable, which expands 
+This is made easier with tclmake's novel `$!` automatic variable, which expands 
 to the name of the preceding target whose evaluation has caused the current 
 target to be evaluated.  Thus in the first example, the rule "--test-wrap" uses 
-the automatic variable "$!" which is set to the name of the file that matched 
+the automatic variable `$!` which is set to the name of the file that matched 
 the pattern "%.kit".
 
 # Features added since tclmake 1.0:
@@ -215,7 +215,7 @@ developed.
 
 Fortunately the sdx package used to wrap starkits includes a command to create 
 a starkit version stamp, which operates identically on a wrapped and an 
-unwrapped starkit.  The option rule '--test-wrap' uses the '$!' automatic 
+unwrapped starkit.  The option rule '--test-wrap' uses the `$!` automatic 
 variable to generate version stamps for a wrapped and unwrapped starkit without 
 having to know its name specifically, and the MAKE_UPDATE proc is used to 
 compare the version stamps and mark if the wrapped starkit needs to be 

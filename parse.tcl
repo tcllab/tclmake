@@ -206,7 +206,9 @@ proc _parseFile {filename} {
 
 	} elseif { [regexp {%} $line] \
 		&& [regexp "^(\[^:\]*)(:+)(\[^:\]*)$" $line \
-		_ tgt colons dep] } {
+		_ tgt colons dep] \
+		&& [_leeryGlob {*}[string trim $tgt]] eq [string trim $tgt] \
+		&& [_leeryGlob {*}[string trim $dep]] eq [string trim $dep]} {
 	    # Pattern rule with implicit targets
 	    set id [incr _unique]
 	    set _target($id) ""
@@ -218,9 +220,11 @@ proc _parseFile {filename} {
 		puts "\nPattern rule with implicit targets:"
 	    }
 
-	} elseif { (1 || [regexp {%} $line]) \
+	} elseif { ([regexp {%} $line]) \
 		&& [regexp "^(\[^:\]*):(\[^:\]+)(:+)(\[^:\]*)$" $line _ \
-		lhs tgt colons dep] } {
+		lhs tgt colons dep] \
+		&& [_leeryGlob {*}[string trim $tgt]] eq [string trim $tgt] \
+		&& [_leeryGlob {*}[string trim $dep]] eq [string trim $dep]} {
 	    # Pattern rule with explicit targets
 	    set id [incr _unique]
 	    set _target($id) [_substVars $lhs]
@@ -255,10 +259,10 @@ proc _parseFile {filename} {
 
 	} else {
 	    puts "Unrecognized rule: $line"
+	    set foundrule -1
 	}
 	# If we found a rule, read the command following it
 	if $foundrule {
-	    _printrule $id
 	    set command {}
 	    while { ![eof $fd] } {
 		set line [gets $fd]
@@ -272,7 +276,10 @@ proc _parseFile {filename} {
 		}
 	    }
 	    
-	    set _command($id) $command
+	    if {$foundrule == 1} {
+			_printrule $id
+			set _command($id) $command
+	    }
 	}
     }
     close $fd
