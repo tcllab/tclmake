@@ -11,7 +11,7 @@ If a line starts with the character `@`, then the Tcl command starting on that l
 The command will have any make-variables substituted into it. The command will also have the following automatic variables substituted:
 
 `$@`
- - The name of the target that is being updated. In the tclIndex example, this variable will be "tclIndex." 
+ - The name of the target that is being updated. In the tclIndex example, this variable will be **tclIndex**. 
  
 `$!`
  - The name of the target that is being updated that caused this target to be updated. This is like going "up the call stack," and is used only in very special circumstances (see [Recursive tclmakes](./recursion.md)). This variable is unique to tclmake. 
@@ -20,7 +20,7 @@ The command will have any make-variables substituted into it. The command will a
  - The name of the first dependency. In the tclIndex example, this variable will be the first file in **TCL_SRCS**. 
  
 `$?`
- - The names of the dependencies that have been updated before the target. In the tclIndex example, this variable will be the files in **TCL_SRCS** that are newer than tclIndex. 
+ - The names of the dependencies that have been updated before the target. In the tclIndex example, this variable will be the files in **TCL_SRCS** that are newer than **tclIndex**. 
  
 `$^`
 `$+`

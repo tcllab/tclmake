@@ -15,7 +15,7 @@ Simple rules are rules that contain a colon but do not contain a percent sign.
 
     tclIndex: $(TCL_SRCS)
 
-Targets are to the left; dependencies to the right. There can be an arbitrary number of either. Wild-cards, such as "*.tcl" can be used on either side of the colon.
+Targets are to the left; dependencies to the right. There can be an arbitrary number of either. Wild-cards, such as `*.tcl` can be used on either side of the colon.
 
 If a target does not exist, or if any of the dependencies is newer than any of the targets, then that target is out of date, and the rule's command will be executed to update it. If any dependency is itself a target (in another rule), then the dependencies will be chained to determine if the dependency itself needs updating,
 
@@ -25,7 +25,7 @@ If a target is not the name of a file, then it is what is called a "phony target
 
     all: tclIndex sources
 
-When tclmake attempts to update the goal all, it looks for a file named all. If it doesn't find one, it recursively attempts to update the dependencies tclIndex and sources. The effect is exactly the same as if tclIndex and sources had been the goals in the first place.
+When tclmake attempts to update the goal **all**, it looks for a file named **all**. If it doesn't find one, it recursively attempts to update the dependencies **tclIndex** and **sources**. The effect is exactly the same as if **tclIndex** and **sources** had been the goals in the first place.
 
 ## Pattern rules
 
@@ -54,7 +54,7 @@ For example, consider the rule:
     sources: % :: SCCS/s.%
         exec sccs get $<
         
-In the ordinary case of an explicit pattern match rule, the target "sources" would be used to construct a target-pattern value "sources" and a dep-pattern value "SCCS/s.sources".  If there is no file called "SCCS/s.sources", then tclmake goes into a special behavior: it takes the dep-pattern, substitutes the `%` for a `*`, then does a glob search for "SCCS/s.*".  Each file name returned from the search will be processed independently in a loop with the target-pattern used as the target and the file name used as the dependency.  The command associated with the rule will be run once for each file name returned.
+In the ordinary case of an explicit pattern match rule, the target **sources** would be used to construct a target-pattern value **sources** and a dep-pattern value **SCCS/s.sources**.  If there is no file called **SCCS/s.sources**, then tclmake goes into a special behavior: it takes the dep-pattern, substitutes the `%` for a `*`, then does a glob search for `SCCS/s.*`.  Each file name returned from the search will be processed independently in a loop with the target-pattern used as the target and the file name used as the dependency.  The command associated with the rule will be run once for each file name returned.
 
 Note that for the special behavior to be enabled, the rule must be a terminator rule with double colons separating the target-pattern from the dep-pattern.  See **Double-colon rules** below.
 
@@ -87,7 +87,7 @@ In other words, use the double-colon when a dependency is a file that must exist
 
 One of the few extensions tclmake makes to regular make is the ability to define command-line options in the tclmakefile itself. To do so, simply define a rule that has targets beginning with a leading dash, and with no dependencies. If any of those targets are specified on the command line, the rule will be run after updating all other targets.
 
-The "--recursive" and "--packages" command-line options are defined in this way. See [Recursive tclmakes](./recursion.md) for examples. 
+The `--recursive` and `--packages` command-line options are defined in this way. See [Recursive tclmakes](./recursion.md) for examples. 
 
 For example, the following rule could be defined:
 
@@ -98,7 +98,7 @@ It could be used from the command line like so:
 
     % tclmake --notify-ci build_program
     
-tclmake treats "--notify-ci" as a goal specified on the command line just like any other, except that since its name identifies it as an option goal it is guaranteed to be evaluated last, after all other goals.
+tclmake treats `--notify-ci` as a goal specified on the command line just like any other, except that since its name identifies it as an option goal it is guaranteed to be evaluated last, after all other goals.
 
 An option rule can also be specified as a dependency in a tclmakefile like any other rule.  The following could be defined:
 
@@ -107,17 +107,17 @@ An option rule can also be specified as a dependency in a tclmakefile like any o
     build_program : $(build_objects)
         exec CompileProgram.sh $^
         
-and if "deploy_program" were specified as a goal, the build_program goal would be updated, then the "--notify-ci" option goal command would send the notification email.
+and if **deploy_program** were specified as a goal, the **build_program** goal would be updated, then the **--notify-ci** option goal command would send the notification email.
 
 Unlike other targets, an option rule target is never marked as updated, so an option rule can be used in multiple places in a dependency chain, and its command will be executed each time the option rule is included in a target's dependencies.
 
 ## MAKE_UPDATE procedure
 
-The up-to-date status of a target based on its timestamp relative to its dependencies can be overridden.  The procedure `MAKE_UPDATE` is available to be called by any Tcl script in the tclmakefile.  It takes two arguments: a target name and a conditional expression.  If the conditional evaluates to true, the update script of the specified target is run regardless of whether the target is out of date with respect to its dependencies.  If the expression is false, the target will not be updated even if it is out of date.
+The up-to-date status of a target based on its timestamp relative to its dependencies can be overridden.  The procedure `MAKE_UPDATE` is available to be called by any Tcl script in the tclmakefile.  It takes two arguments: a target name and a conditional expression.  If the conditional evaluates to true, the update command of the specified target is run regardless of whether the target is out of date with respect to its dependencies.  If the expression is false, the target will not be updated even if it is out of date.
 
 The `MAKE_UPDATE` proc allows definition of any criteria for updating a target, 
 beyond simply comparing file modification times.  If `MAKE_UPDATE` is called in 
-the script of one of the target's dependencies, when dependency updating 
+the command of one of the target's dependencies, when dependency updating 
 is done and it's time for the target to be updated, the target's update script 
 will be run or not based on the value of the conditional expression passed to `MAKE_UPDATE` when it was called.
 

@@ -27,7 +27,7 @@ Variables are defined recursively, as in make. For example, in the following,
     FOO = $(BAR) foo!
     BAR = oh
 
-the value of FOO will be "oh foo!".
+the value of **FOO** will be "oh foo!".
 
 Environment variables can be referenced in the same way. A variable defined in a tclmakefile or on the command line will override the value given by the environment. tclmake can also read variable definitions from regular makefiles, with a command such as
 
@@ -70,6 +70,8 @@ For example, the following could be written in a tclmakefile:
     MAKE_EVAL TCL_FILES = [glob *.tcl]
     
 The `glob` command would be evaluated and the result stored in the variable **TCL_FILES**
+
+------
 
 tclmake does not support non-recursively-defined variables, as in the := definitions of GNU make. 
 

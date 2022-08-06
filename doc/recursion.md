@@ -44,4 +44,4 @@ Second, it can be added to any rule as a dependency. Thus, the recursive "clean"
 
 In this case, `tclmake clean` will recursively clean directories.
 
-Note the use of the `$!` automatic variable in the "--recursive" rule.  It is defined as the preceding target that caused the current target to be updated.  In the example above the variable is given the value "clean".
+Note the use of the `$!` automatic variable in the **--recursive** rule.  It is defined as the preceding target that caused the current target to be updated.  In the example above the variable is given the value **clean**.
