@@ -1,6 +1,7 @@
 # A complete example
 
-To put all this together, here is a complete example.  This was the original tclmakefile for preparing a release of the package.
+To put all this together, here is a complete example.  This was the original 
+tclmakefile for preparing a release of the package.
 
     # Directories to recurse in
     DIRS = doc bin
@@ -43,7 +44,15 @@ To put all this together, here is a complete example.  This was the original tcl
 
 # Another example
 
-The below example shows some of the newer features of tclmake.  The pattern rules cause a new tclkit to be wrapped based on whether there are new edits to its corresponding unwrapped starkit.  Since an unwrapped starkit may contain many files, there is no one file that can be used as a dependency such that a new file modification time would make the tclkit out of date.  Instead, an option rule is used to generate version hashes (using the "sdx" package) of the tclkit and the unwrapped starkit, and within the command script of the option rule the procedure `MAKE_UPDATE` is used to compare version hashes and schedule the tclkit to be updated only when the versions differ.
+The below example shows some of the newer features of tclmake.  The pattern 
+rules cause a new tclkit to be wrapped based on whether there are new edits to 
+its corresponding unwrapped starkit.  Since an unwrapped starkit may contain 
+many files, there is no one file that can be used as a dependency such that a 
+new file modification time would make the tclkit out of date.  Instead, an 
+option rule is used to generate version hashes (using the "sdx" package) of the 
+tclkit and the unwrapped starkit, and within the command script of the option 
+rule the procedure `MAKE_UPDATE` is used to compare version hashes and schedule 
+the tclkit to be updated only when the versions differ.
 
     # Value of MAKE_INIT var is treated as a Tcl script and evaluated after file
     # is parsed but before goal updating:
@@ -86,7 +95,10 @@ The below example shows some of the newer features of tclmake.  The pattern rule
     	set vfs [file root "$@"].vfs
     	exec basekit $(SDX) wrap "$@" -vfs $vfs -runtime "$(RUNTIME)" $(WRAP_OPTIONS)
     	
-The option rule **--test-wrap** uses the `$!` automatic variable to generate version stamps for a wrapped and unwrapped starkit without having to know its name specifically, and the `MAKE_UPDATE` proc is used to compare the version stamps and mark if the wrapped starkit needs to be regenerated.
+The option rule **--test-wrap** uses the `$!` automatic variable to generate 
+version stamps for a wrapped and unwrapped starkit without having to know its 
+name specifically, and the `MAKE_UPDATE` proc is used to compare the version 
+stamps and mark if the wrapped starkit needs to be regenerated.
 
 Since an option rule is never marked as updated, the **--test-wrap** rule is 
 generic, and can be used as a prerequisite for any number of starkits in a 

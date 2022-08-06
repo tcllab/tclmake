@@ -79,17 +79,26 @@ change directories, load packages or otherwise initialize the environment.
 
 - If a make variable defintion line begins with the keyword **MAKE_EVAL**, the 
 variable value is treated as Tcl code, and command and variable substitution is 
-done on it, and the result stored in the variable.  Thus Tcl can be used for many customizations in a makefile, rather than GNU make's bespoke programming language.
+done on it, and the result stored in the variable.  Thus Tcl can be used for 
+many customizations in a makefile, rather than GNU make's bespoke programming 
+language.
 
 - The procedure MAKE_UPDATE is available to be called by any Tcl script in the 
-makefile.  The MAKE_UPDATE proc evaluates a conditional and applies its result to a target; the boolean conditional result determines if a target is updated or not.  This allows you to define any criteria for updating a target, beyond simply comparing file modification times.
+makefile.  The MAKE_UPDATE proc evaluates a conditional and applies its result 
+to a target; the boolean conditional result determines if a target is updated 
+or not.  This allows you to define any criteria for updating a target, beyond 
+simply comparing file modification times.
   
 - You can turn recursive dependency-updating on or off on the command line.  
   - The option '--update' will force all targets in a dependency chain to be 
-updated, regardless of whether they are out of date.  This is handy for testing, for example, or when new files of unknown timestamp are merged into a project, because it will cause update commands of all of a goal's dependencies to be run.
+updated, regardless of whether they are out of date.  This is handy for 
+testing, for example, or when new files of unknown timestamp are merged into a 
+project, because it will cause update commands of all of a goal's dependencies 
+to be run.
   - The option '--terminator' will force all specified targets to be treated as 
 terminator rules; that is, for the specified target a dependency chain won't be 
-followed. This is handy, for example, for testing an install goal without triggering a complete rebuild of a project.
+followed. This is handy, for example, for testing an install goal without 
+triggering a complete rebuild of a project.
 
 # Motivation
 
@@ -101,9 +110,15 @@ features to create brittle bespoke solutions to hard-to-handle cases.  GNU make
 has its own (seemingly ad hoc) programming language.  The protocol for escaping 
 special characters appears incomplete.  I know there are shell commands I 
 wanted to use in a makefile but I just could not find ways to escape all the 
-special characters to make's satisfaction.  Perhaps most surprising, GNU make simply won't accept spaces in target or prerequisite names, no matter what escaping or quoting mechanism you think or hope should work.  So it's impossible to use arbitrary collections of files as inputs.  All filename inputs to a GNU makefile have to be known and vetted in advance.
+special characters to make's satisfaction.  Perhaps most surprising, GNU make 
+simply won't accept spaces in target or prerequisite names, no matter what 
+escaping or quoting mechanism you think or hope should work.  So it's 
+impossible to use arbitrary collections of files as inputs.  All filename 
+inputs to a GNU makefile have to be known and vetted in advance.
 
-tclmake simply evaluates the targets and dependencies of a rule as lists, and spaces and special characters are just fine as long as the list elements are properly formatted.  Just about any sequence of characters can be escaped and 
+tclmake simply evaluates the targets and dependencies of a rule as lists, and 
+spaces and special characters are just fine as long as the list elements are 
+properly formatted.  Just about any sequence of characters can be escaped and 
 incorporated into a rule as long as you are diligent and observe Tcl's 
 clearly-defined parsing rules. When Tcl's ability to escape and process 
 arbitrary inputs is compared to a tool as widely-adopted and venerated as GNU 

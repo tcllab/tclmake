@@ -1,6 +1,8 @@
 # tclmake -- a Tcl-only make-like utility
 
-tclmake is a simple make-like utility written entirely in Tcl. It reads files written in a subset of regular (GNU) make, but with the commands for each rule written in Tcl.
+tclmake is a simple make-like utility written entirely in Tcl. It reads files 
+written in a subset of regular (GNU) make, but with the commands for each rule 
+written in Tcl.
 
 tclmake is not meant to be a clone of standard make, but it borrows many
 features and adds a few useful features of its own. Anyone with experience 
@@ -77,6 +79,7 @@ Documentation Contents:
   8. [A complete example](./example.md)
   9. [Limitations](./limitations.md)
 
-Copyright © 1998, The Regents of the University of California. All rights reserved. Last updated: 05/11/98. Author: John Reekie.
+Copyright © 1998, The Regents of the University of California. All rights 
+reserved. Last updated: 05/11/98. Author: John Reekie.
 
 Copyright © 2022, Stephen E. Huntley.
