@@ -1,4 +1,4 @@
-# tclmake 2022, v. 2.2
+# tclmake 2022, v. 2.3
 
 tclmake is not meant to be a clone of standard make, but it borrows many
 features and adds a few useful features of its own. Anyone with experience 

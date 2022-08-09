@@ -31,7 +31,7 @@ if [catch {package require tclmake}] {
 }
 
 # Print startup sig
-puts "Tclmake, version 2.2..."
+puts "Tclmake, version 2.3..."
 
 # Run the main procedure
 eval tclmake $argv

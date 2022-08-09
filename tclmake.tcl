@@ -33,7 +33,7 @@
 # Based on pp 344-346 of Harrison and McClellan's "Effective Tcl/Tk
 # Programming" book
 
-package provide tclmake 2.2
+package provide tclmake 2.3
 global env auto_path
 set env(TCLMAKE_LIBRARY) [file dirname [info script]]
 if { [lsearch -exact $auto_path $env(TCLMAKE_LIBRARY)] == -1 } {

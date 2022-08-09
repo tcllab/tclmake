@@ -1,0 +1,45 @@
+# _set variables_
+OLD_VERSION = 2.2
+NEW_VERSION = 2.3
+
+# _simple rule_
+# Perform final actions for new version release:
+update : version_update tclIndex
+
+# _simple rule_
+# Replace old version number with new in relevant files:
+version_update : main.tcl tclmake.tcl README.md bin/tclmake pkgIndex.tcl
+	foreach vfile {$^} {
+		string_replace $vfile $(OLD_VERSION) $(NEW_VERSION)
+	}
+
+# _simple rule with glob pattern_
+tclIndex : *.tcl
+	auto_mkindex [pwd]
+
+# _reverse pattern match rule_
+# After manual inspection of line-wrapped markdown files, overwrite originals
+# with edited files:
+doc_margin_final : %.md.fold.md :: doc/%.md.fold.md README.md.fold.md
+	file copy -force $< [file root [file root $<]]
+	file delete $<
+
+# _reverse pattern match rule_
+# Wrap markdown files to 80-char line width.
+# Redirect to new file for manual inspection:
+doc_margin_draft : %.md :: doc/%.md README.md
+	exec fold -s $< > $<.fold.md
+	
+# _procedure_
+# Simple proc to replace a string in a file:
+proc string_replace {file oldString newString} {
+	set f [open $file]
+	set conts [read $f]
+	close $f
+	
+	set conts [string map [list $oldString $newString] $conts]
+	
+	set f [open $file w]
+	puts -nonewline $f $conts
+	close $f
+}

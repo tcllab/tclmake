@@ -350,7 +350,7 @@ proc _processCommandLine {args} {
 # the relevant text!
 # 
 proc _help {} {
-    puts "tclmake, version 2.2 Usage:"
+    puts "tclmake, version 2.3 Usage:"
     puts {
 -d 
 --debug 
