@@ -5,9 +5,9 @@ immediately after a rule, and must be indented by at least one space or tab.
 The command ends at the first blank line or line that has a character at the 
 start of the line.
 
-Unlike GNU make, which evaluates each line in a command separately in its own 
-process, tclmake evaluates the command as a whole.  So a variable that is 
-defined on one line, for example, can be referenced in a later line.
+Unlike GNU make, which by default evaluates each line in a command separately in
+its own process, tclmake evaluates the command as a whole.  So a variable that
+is defined on one line, for example, can be referenced in a later line.
 
 Also unlike GNU make, which requires that tabs be used to indent the lines in a 
 command, tclmake accepts any whitespace for indenting.

@@ -270,9 +270,15 @@ proc _update {target caller dependencies terminal cmd} {
     if { ![file exists $target] } {
 	set outofdate 1
     }
-    if {$terminal && !$_flags(terminal)} {
+    if {$terminal} {
 	foreach d $dependencies {
 	    if ![file exists $d] {
+			if {$_flags(terminal)} {
+				if $_flags(debug) {
+					puts "'--terminal' flag specified: missing dependency '$d' ignored."
+				}
+				continue
+			}
             puts "No rule to make target '$d', needed by '$target'.  Stop."
             return -code 1 -errorcode missing_target
 	    }

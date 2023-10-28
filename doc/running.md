@@ -50,9 +50,11 @@ tclmake accepts the following options:
           Print no information at all to stdout or stderr. 
     -t 
     --terminator
-          Treat rules for all given goals as terminator rules.  I.e., do not
+          Treat rules for all given goals as terminator rules; i.e., do not
           attempt to follow chain of dependencies, assume all dependencies for
-          specified goals are up to date.
+          specified goals are up to date. Unlike a standard terminal rule, 
+          missing dependency files are ignored and each rule command is 
+          executed regardless.
     -u 
     --update 
           Ignore timestamps and update targets even if they're not out of date. 

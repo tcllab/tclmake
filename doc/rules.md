@@ -81,13 +81,12 @@ value **SCCS/s.sources**.  If there is no file called **SCCS/s.sources**, then
 tclmake goes into a special behavior: it takes the dep-pattern, substitutes the 
 `%` for a `*`, then does a glob search for `SCCS/s.*`.  Each file name returned 
 from the search will be processed independently in a loop with the 
-target-pattern used as the target and the file name used as the dependency.  
-The command associated with the rule will be run once for each file name 
-returned.
+target-pattern used as the target and the file name used as the dependency. The
+command associated with the rule will be run once for each file name returned.
 
 Note that for the special behavior to be enabled, the rule must be a terminator 
-rule with double colons separating the target-pattern from the dep-pattern.  
-See **Double-colon rules** below.
+rule with double colons separating the target-pattern from the dep-pattern. See
+**Double-colon rules** below.
 
 This special behavior can be used for example to compile all C files in a 
 directory into object files, without having to list the C files explicitly:
@@ -166,10 +165,10 @@ dependencies.
 The up-to-date status of a target based on its timestamp relative to its 
 dependencies can be overridden.  The procedure `MAKE_UPDATE` is available to be 
 called by any Tcl script in the tclmakefile.  It takes two arguments: a target 
-name and a conditional expression.  If the conditional evaluates to true, the 
-update command of the specified target is run regardless of whether the target 
-is out of date with respect to its dependencies.  If the expression is false, 
-the target will not be updated even if it is out of date.
+name and a conditional expression.  If the conditional evaluates to boolean
+true, the update command of the specified target is run regardless of whether
+the target's timestamp is out of date with respect to its dependencies. If the
+expression is false, the target will not be updated even if it is out of date.
 
 The `MAKE_UPDATE` proc allows definition of any criteria for updating a target, 
 beyond simply comparing file modification times.  If `MAKE_UPDATE` is called in 

@@ -1,4 +1,4 @@
-# tclmake 2022, v. 2.3
+# tclmake 2023, v. 2.4
 
 tclmake is not meant to be a clone of standard make, but it borrows many
 features and adds a few useful features of its own. Anyone with experience 
@@ -9,8 +9,8 @@ expressed as a single Tcl script, rather than a sequence of discrete shell
 commands.
 
 If you've ever struggled with writing a GNU makefile and thought, 'this would 
-go a lot easier if I could write the update logic in a dynamic language', then
-tclmake may be the tool for you.
+go a lot easier if I could write the update logic like I write scripts in a 
+dynamic language', then tclmake may be the tool for you.
 
 ------
 
@@ -77,19 +77,19 @@ variable exists after the makefile has been parsed but before updating of
 targets begins, this script will be evaluated.  The script can for example 
 change directories, load packages or otherwise initialize the environment.
 
-- If a make variable defintion line begins with the keyword **MAKE_EVAL**, the 
-variable value is treated as Tcl code, and command and variable substitution is 
-done on it, and the result stored in the variable.  Thus Tcl can be used for 
-many customizations in a makefile, rather than GNU make's bespoke programming 
+- If the value in a make variable defintion line is enclosed in square 
+brackets, the value is treated as a Tcl script, the script is evaluated and the 
+result stored in the variable.  Thus Tcl can be used for many variable value 
+customizations in a makefile, rather than GNU make's bespoke programming 
 language.
 
-- The procedure MAKE_UPDATE is available to be called by any Tcl script in the 
-makefile.  The MAKE_UPDATE proc evaluates a conditional and applies its result 
-to a target; the boolean conditional result determines if a target is updated 
-or not.  This allows you to define any criteria for updating a target, beyond 
-simply comparing file modification times.
+- You can code any criteria for updating a target, beyond simply comparing file 
+modification times. The procedure MAKE_UPDATE is available to be called by any 
+Tcl script in the makefile. The MAKE_UPDATE proc evaluates a conditional and 
+applies its result to a target; the boolean conditional result determines if a 
+target is updated or not. 
   
-- You can turn recursive dependency-updating on or off on the command line.  
+- You can turn recursive dependency-updating on or off on the command line.
   - The option '--update' will force all targets in a dependency chain to be 
 updated, regardless of whether they are out of date.  This is handy for 
 testing, for example, or when new files of unknown timestamp are merged into a 
@@ -116,13 +116,14 @@ escaping or quoting mechanism you think or hope should work.  So it's
 impossible to use arbitrary collections of files as inputs.  All filename 
 inputs to a GNU makefile have to be known and vetted in advance.
 
-tclmake simply evaluates the targets and dependencies of a rule as lists, and 
-spaces and special characters are just fine as long as the list elements are 
-properly formatted.  Just about any sequence of characters can be escaped and 
-incorporated into a rule as long as you are diligent and observe Tcl's 
-clearly-defined parsing rules. When Tcl's ability to escape and process 
-arbitrary inputs is compared to a tool as widely-adopted and venerated as GNU 
-make, it's a testament to just what an accomplishment Tcl's syntax is.
+tclmake simply evaluates the targets and dependencies of a rule as lists (as 
+Tcl defines the term), and spaces and special characters are just fine as long 
+as the list elements are properly formatted.  Just about any sequence of 
+characters can be escaped and incorporated into a rule as long as you are 
+diligent and observe Tcl's clearly-defined parsing rules. When Tcl's ability to 
+escape and process arbitrary inputs is compared to a tool as widely-adopted and 
+venerated as GNU make, it's a testament to just what an accomplishment Tcl's 
+syntax is.
 
 # Docs 
 
@@ -145,3 +146,28 @@ MIT License.
 
 Thanks to John Reekie, who wrote the original tclmake, and released it in 1998 
 as part of the Ptolemy project at Berkeley.
+
+# Changes
+
+## v. 2.4
+
+* Allow evaluation of variable value as Tcl script when enclosed in square 
+brackets, without use of `MAKE_EVAL` keyword.
+* Allow use of `return` command to end execution of a rule, in addition to 
+`break` and `continue`.
+* Enable variable expansion in dependencies of pattern rules.
+* When using the `--terminal` command line argument, force execution of rule 
+commands even when some dependencies are missing or phony.
+
+## v. 2.2:
+
+* Add check to force target update from command line (--update, -u).
+
+## v. 2.1:
+
+* In the case that a target matches both an implicit rule and an explicit rule, 
+ensure that only the command for the explicit rule is run.
+* For Windows files in rules, allow substitution of a colon for a pipe 
+character `|` so the colon is not mistaken for a rule separator.
+* Allow keyword `MAKE_EVAL` in variable definition line to evaluate variable 
+contents as code and store result in variable.
