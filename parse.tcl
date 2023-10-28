@@ -161,15 +161,19 @@ proc _parseFile {filename} {
 	    # so as not to overwrite command-line vars.
 	    set name [string trim $name]
 	    if ![info exists _vars($name)] {
-	 	if {[string first MAKE_EVAL $name] == 0} {
-	 		set name [string trimleft [string range $name 9 end]]
-	 		set value [_substVars $value]
-	 		set value [$::makefile_interp eval subst [list $value]]
-	 	}
-		set _vars($name) $value
-		if $_flags(debug) {
-		    puts "$name = $value"
-		}
+		 	if {[string first MAKE_EVAL $name] == 0} {
+		 		set name [string trimleft [string range $name 9 end]]
+		 		set value [_substVars $value]
+		 		set value [$::makefile_interp eval subst [list $value]]
+		 	} elseif {"[string index $value 0][string index [string trim $value] end]" eq {[]}} {
+				set value [_substVars $value]
+		 		set value [$::makefile_interp eval subst [list $value]]
+			}
+		 	
+			set _vars($name) $value
+			if $_flags(debug) {
+			    puts "$name = $value"
+			}
 	    }
 	} elseif [regexp "^\\.($stem)\\.($stem)${space}:$space$" $line\
 		_ dep tgt] {
@@ -207,8 +211,8 @@ proc _parseFile {filename} {
 	} elseif { [regexp {%} $line] \
 		&& [regexp "^(\[^:\]*)(:+)(\[^:\]*)$" $line \
 		_ tgt colons dep] \
-		&& [_leeryGlob {*}[string trim $tgt]] eq [string trim $tgt] \
-		&& [_leeryGlob {*}[string trim $dep]] eq [string trim $dep]} {
+		&& [_leeryGlob {*}[string trim $tgt]] eq [list [string trim $tgt]] \
+		&& [_leeryGlob {*}[string trim $dep]] eq [list [string trim $dep]]} {
 	    # Pattern rule with implicit targets
 	    set id [incr _unique]
 	    set _target($id) ""
@@ -223,8 +227,8 @@ proc _parseFile {filename} {
 	} elseif { ([regexp {%} $line]) \
 		&& [regexp "^(\[^:\]*):(\[^:\]+)(:+)(\[^:\]*)$" $line _ \
 		lhs tgt colons dep] \
-		&& [_leeryGlob {*}[string trim $tgt]] eq [string trim $tgt] \
-		&& [_leeryGlob {*}[string trim $dep]] eq [string trim $dep]} {
+		&& [_leeryGlob {*}[string trim $tgt]] eq [list [string trim $tgt]] \
+		&& [_leeryGlob {*}[string trim $dep]] eq [list [string trim $dep]]} {
 	    # Pattern rule with explicit targets
 	    set id [incr _unique]
 	    set _target($id) [_substVars $lhs]

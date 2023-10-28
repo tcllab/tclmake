@@ -270,7 +270,7 @@ proc _update {target caller dependencies terminal cmd} {
     if { ![file exists $target] } {
 	set outofdate 1
     }
-    if $terminal {
+    if {$terminal && !$_flags(terminal)} {
 	foreach d $dependencies {
 	    if ![file exists $d] {
             puts "No rule to make target '$d', needed by '$target'.  Stop."
@@ -371,6 +371,7 @@ proc _update {target caller dependencies terminal cmd} {
 	set makefile_globalVars [$::makefile_interp eval info globals]
 
 	set workingDir [pwd]
+	set report {set ec [catch {$execute} msg];return [list \$ec \$msg]} 
 
 	while { [regexp "^(\[^\n\]*)\n(.*)\$" $cmd _ line cmd] } {
 	    # Read a line and check for an @
@@ -390,7 +391,8 @@ proc _update {target caller dependencies terminal cmd} {
 		puts $execute
 	    }
 	    # Evaluate it
-	    set errorcode [catch {$::makefile_interp eval $execute} msg]
+	    #set errorcode [catch {$::makefile_interp eval $execute} msg]
+	    lassign [$::makefile_interp eval [subst -nocom $report]] errorcode msg
 	    if $errorcode {
 		# There was a return error code
 		if { $errorcode > 1 } {
@@ -398,7 +400,7 @@ proc _update {target caller dependencies terminal cmd} {
 		    # this command
 		    break
 		} else {
-		    _error $msg
+		    _error $msg "$msg\n\twhile executing:\n$execute\n\tfor target: $target"
 		}
 	    }
 	}
